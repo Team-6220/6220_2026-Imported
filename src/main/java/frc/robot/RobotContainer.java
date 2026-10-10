@@ -121,26 +121,24 @@ public class RobotContainer {
    */
   private void configureBindings() {
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-    Trigger angleUp = new Trigger(() -> m_buttonBoard.getRawButton(15));
-    Trigger angleDown = new Trigger(() -> m_buttonBoard.getRawButton(16));
-    Trigger intakeOut = new Trigger(() -> m_buttonBoard.getRawButton(2));
-    Trigger intakeIn = new Trigger(() -> m_buttonBoard.getRawButton(1));
+    Trigger angleUp = new Trigger(() -> m_joystick.getRawButton(10));
+    Trigger angleDown = new Trigger(() -> m_joystick.getRawButton(11));
     Trigger passMid = m_driverController.rightBumper();
     Trigger passFar = m_driverController.b();
-    Trigger resetEncoder = new Trigger(() -> m_buttonBoard.getRawButton(13));
-    Trigger manualArm = new Trigger(() -> m_joystick.getRawButton(1));
+    Trigger resetEncoder = new Trigger(() -> m_joystick.getRawButton(6));
+    Trigger manualArm = new Trigger(() -> m_joystick.getRawButton(4));
     Trigger joystickIntake = new Trigger(() -> m_joystick.getRawButton(0));
     Trigger joystickOuttake = new Trigger(() -> m_joystick.getRawButton(1));
-    Trigger reverseKicker = new Trigger(() -> m_joystick.getRawButton(10));
-    Trigger armUpAndDown = new Trigger(() -> m_buttonBoard.getRawButton(3));
-    Trigger arm0 = new Trigger(() -> m_buttonBoard.getRawButton(5));
-    Trigger arm90 = new Trigger(() -> m_buttonBoard.getRawButton(6));
-    Trigger armReset = new Trigger(() -> m_buttonBoard.getRawButton(14));
+
+    // Trigger armUpAndDown = new Trigger(() -> m_buttonBoard.getRawButton(3));
+    // Trigger arm0 = new Trigger(() -> m_buttonBoard.getRawButton(5));
+    // Trigger arm90 = new Trigger(() -> m_buttonBoard.getRawButton(6));
+    // Trigger armReset = new Trigger(() -> m_joystick.getRawButton(7));
 
     resetEncoder.onTrue(Commands.runOnce(() -> m_angler.resetEncoder()));
-    armReset.onTrue(Commands.runOnce(() -> arm.resetEncoder()));
+    // armReset.onTrue(Commands.runOnce(() -> arm.resetEncoder()));
 
-    armUpAndDown.whileTrue(new ArmUpAndDown(arm));
+    // armUpAndDown.whileTrue(new ArmUpAndDown(arm));
 
     m_driverController
         .y()
@@ -159,34 +157,30 @@ public class RobotContainer {
 
     // m_driverController.x().whileTrue(new ShooterTESTER(m_shooter, belt));
 
-    passMid.whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, 2200, 1200, 32));
+    passMid.whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, 2200, 1200, 32, -0.5));
 
-    passFar.whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, 3100, 1200, 32));
+    passFar.whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, 3100, 1200, 32, -0.5));
 
-    m_driverController.x().whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, -2000, -2400, 0));
-
-    intakeOut.whileTrue(new TestRollerCommand(true));
-
-    intakeIn.whileTrue(new TestRollerCommand(false));
+    m_driverController.x().whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, -2000, -2400, 0, 0.5));
 
     joystickIntake.whileTrue(new TestRollerCommand(true));
 
     joystickOuttake.whileTrue(new TestRollerCommand(false));
 
-    // Kicker motors (41, 34) are driven by setTopGroupPercent / stopTopGroup
-    reverseKicker.whileTrue(
-        Commands.runEnd(
-            () -> m_shooter.setTopGroupPercent(-KICKER_REVERSE_PERCENT),
-            () -> m_shooter.stopTopGroup(),
-            m_shooter));
+    // // Kicker motors (41, 34) are driven by setTopGroupPercent / stopTopGroup
+    // reverseKicker.whileTrue(
+    //     Commands.runEnd(
+    //         () -> m_shooter.setTopGroupPercent(-KICKER_REVERSE_PERCENT),
+    //         () -> m_shooter.stopTopGroup(),
+    //         m_shooter));
 
     m_driverController
         .leftTrigger()
         .whileTrue(new AlignAndFlywheels(s_Swerve, m_driverController, m_angler, m_shooter, belt));
 
-    arm0.onTrue(new ArmToPositionCommand(arm, -2));
+    // arm0.onTrue(new ArmToPositionCommand(arm, -2));
 
-    arm90.onTrue(new ArmToPositionCommand(arm, -29.785476684570312));
+    // arm90.onTrue(new ArmToPositionCommand(arm, -29.785476684570312));
 
     // ==================== State-Based LED Controls ====================
 
