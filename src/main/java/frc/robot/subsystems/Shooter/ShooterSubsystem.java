@@ -190,7 +190,7 @@ public class ShooterSubsystem extends SubsystemBase {
    * @param topRPM Desired top-group velocity in RPM (normal, non-boosted).
    * @param controller The Xbox controller instance.
    */
-  public void runAtTargetVelocity(double topRPM, CommandXboxController controller) {
+  public void runAtTargetVelocity(double topRPM, CommandXboxController controller, double kicker) {
     // Handle new RPM target (first call or RPM changed)
     if (normalTargetRPM != topRPM) {
       normalTargetRPM = topRPM;
@@ -201,7 +201,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     double topRPS;
-    double bottomRPS = m_bottomTargetRPMTN.get() / 60.0;
+    double bottomRPS = kicker / 60.0;
 
     // Phase 1 & 2: Handle first shot with boost and dip detection
     if (isFirstShot) {

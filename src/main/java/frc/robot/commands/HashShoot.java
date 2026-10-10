@@ -57,7 +57,7 @@ public class HashShoot extends Command {
   @Override
   public void execute() {
     m_angler.setAngle(degrees);
-    m_shoot.runAtTargetVelocity(rpm, controller);
+    m_shoot.runAtTargetVelocity(rpm, controller, 1200);
     m_belt.simpleDrive(-0.5);
     
   }
