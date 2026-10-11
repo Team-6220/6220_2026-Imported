@@ -28,8 +28,6 @@ import frc.robot.commands.ArmToPositionCommand;
 import frc.robot.commands.ArmUpAndDown;
 import frc.robot.commands.Autos.BasicAutoBlue;
 import frc.robot.commands.Autos.BasicAutoRed;
-import frc.robot.commands.Autos.SamAuto.SamAutoV1;
-import frc.robot.commands.Autos.SamAuto.SamAutoV2;
 import frc.robot.commands.ManualArm;
 import frc.robot.commands.PassToAlliance;
 import frc.robot.commands.SwerveCom;
@@ -98,7 +96,7 @@ public class RobotContainer {
     // TODO: Register named commands as needed for auto
     // NamedCommands.registerCommand("AutoClimber", new AutoClimberCommand(climberSubsystem));
 
-    autoChooser.addDefault("Do nothing", new InstantCommand());
+    autoChooser.add("Do nothing", new InstantCommand());
     // NamedCommands.registerCommand(null, null);
     autoChooser.add(
         "Red", new BasicAutoRed(s_Swerve, m_angler, m_shooter, belt, m_driverController));
@@ -107,6 +105,8 @@ public class RobotContainer {
     autoChooser.add("samautov1", new SamAutoV1(s_Swerve));
     autoChooser.add("samautov2", new SamAutoV2(s_Swerve));
     autoChooser.onChange(command -> System.out.println("Auto selected: " + command.getName()));
+    autoChooser.addDefault("brightAuto", new BrightTryMakeAuto(s_Swerve, arm, m_driverController, m_angler, m_shooter, belt));
+
     configureBindings();
   }
 
