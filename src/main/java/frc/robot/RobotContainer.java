@@ -28,6 +28,7 @@ import frc.robot.commands.ArmToPositionCommand;
 import frc.robot.commands.ArmUpAndDown;
 import frc.robot.commands.Autos.BasicAutoBlue;
 import frc.robot.commands.Autos.BasicAutoRed;
+import frc.robot.commands.Autos.BasicAuto;
 import frc.robot.commands.ManualArm;
 import frc.robot.commands.PassToAlliance;
 import frc.robot.commands.SwerveCom;
@@ -267,7 +268,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    Command selected = autoChooser.getSelected();
+    Command selected = new BasicAuto(s_Swerve, m_angler, m_shooter, belt, m_driverController);
     System.out.println("Auto: " + autoChooser.getSelectedName());
     return selected;
   }

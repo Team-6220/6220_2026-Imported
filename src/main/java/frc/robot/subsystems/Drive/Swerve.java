@@ -89,6 +89,8 @@ public class Swerve extends SubsystemBase {
   // getRate() sign convention isn't guaranteed to match the already-verified getGyroYaw().
   private Rotation2d lastYawForRate = new Rotation2d();
   private double lastYawRateTimestamp = Timer.getTimestamp();
+  // Limelight's recommended cutoff for trusting MegaTag2 while rotating.
+  private static final double MAX_MT2_YAW_RATE_DEG_PER_SEC = 720.0;
 
   private final int swerveAlignUpdateSecond = 20;
 
@@ -283,11 +285,9 @@ public class Swerve extends SubsystemBase {
   /** Resets the odometer value */
   public void resetOdometry(Pose2d pose2d) {
     System.out.println("Reset Odometry: " + pose2d.getX() + ", " + pose2d.getY());
-    this.positions[0] = new SwerveModulePosition();
-    this.positions[1] = new SwerveModulePosition();
-    this.positions[2] = new SwerveModulePosition();
-    this.positions[3] = new SwerveModulePosition();
-    poseEstimator.resetPosition(getGyroYaw(), positions, pose2d);
+    // Must use the modules' real positions: resetting with zeros makes the next update() treat the
+    // modules' total distance as one huge step and throws the pose off.
+    poseEstimator.resetPosition(getGyroYaw(), getModulePositions(), pose2d);
   }
 
   /** Get's the chassis speed of the robot in ROBOT RELATIVE SPEED */
@@ -528,11 +528,15 @@ public class Swerve extends SubsystemBase {
 
     // Drain every queued estimate that passed the camera's PoseEstimateConfig filters
     // (see Cameras.MT2_CONFIG). Each estimate carries its own distance/tag-count scaled std devs.
+    // Always drain the queue, but drop estimates while spinning fast: MT2 relies on our yaw, and
+    // the yaw/frame latency mismatch makes those poses unreliable.
+    boolean spinningTooFast = Math.abs(yawRateDegPerSec) > MAX_MT2_YAW_RATE_DEG_PER_SEC;
     for (PoseEstimate estimate :
         Cameras.FRONT.readAcceptedPoseEstimates(PoseEstimateType.MT2_WPIBLUE)) {
+      megatag2Pose.setRobotPose(estimate.pose);
+      if (spinningTooFast) continue;
       poseEstimator.addVisionMeasurement(
           estimate.pose, estimate.timestampSeconds, estimate.stdDevs);
-      megatag2Pose.setRobotPose(estimate.pose);
     }
     // vision stuff ends
 

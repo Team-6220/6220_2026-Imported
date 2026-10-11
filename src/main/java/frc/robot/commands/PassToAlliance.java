@@ -40,6 +40,7 @@ public class PassToAlliance extends Command {
     this.rpmtop = rpmtop;
     this.rpmbottom = rpmbottom;
     this.beltspeed = beltspeed;
+    this.angle = angle;
     addRequirements(m_angler, m_shoot, m_belt);
   }
 
@@ -58,7 +59,7 @@ public class PassToAlliance extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    m_angler.stop();
+    m_angler.setAngle(0);
     m_shoot.stop();
     m_belt.stop();
   }
