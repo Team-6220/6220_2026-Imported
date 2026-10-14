@@ -268,7 +268,8 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    Command selected = new BasicAuto(s_Swerve, m_angler, m_shooter, belt, m_driverController);
+    // Command selected = new BasicAuto(s_Swerve, m_angler, m_shooter, belt, m_driverController);
+    Command selected = new BrightTryMakeAuto(s_Swerve, arm, m_driverController, m_angler, m_shooter, belt);
     System.out.println("Auto: " + autoChooser.getSelectedName());
     return selected;
   }
