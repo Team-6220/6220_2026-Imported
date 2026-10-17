@@ -360,7 +360,8 @@ public class Swerve extends SubsystemBase {
   }
 
   public void zeroHeading() {
-    double offset = Constants.isRed.equals("red") ? 0 : Math.PI;
+    // Robot facing away from its own driver station: 0 on blue, 180 on red (blue-origin field)
+    double offset = Constants.isRed.equals("red") ? Math.PI : 0;
     poseEstimator.resetPosition(
         getGyroYaw(),
         getModulePositions(),
@@ -497,6 +498,11 @@ public class Swerve extends SubsystemBase {
     for (SwerveModule mod : mSwerveMods) {
       if (driveFFChanged) mod.updateDriveFeedForward();
       mod.periodic();
+      // Steering debug: desired vs NEO (unwrapped) vs CANcoder angle
+      String name = "Mod " + mod.getModuleNumber() + " ";
+      m_driveTelemetry.log(name + "desired deg", mod.getLastDesiredAngleDegrees());
+      m_driveTelemetry.log(name + "NEO unwrapped deg", mod.getUnwrappedAngleDegrees());
+      m_driveTelemetry.log(name + "CANcoder deg", mod.getAbsoluteAngleDegrees());
     }
     if (gyro instanceof GyroIOSim simGyro) {
       simGyro.updateFromChassisSpeeds(getRobotRelativeSpeeds());

@@ -17,16 +17,13 @@ import frc.lib.util.TunableHelper;
 import org.wpilib.tunable.TunableDouble;
 
 public final class AutoConstants {
-  // FIXME: The below constants are used in the example auto, and must be
-  // tuned to specific robot
-
   public static final double translation_kP =
       2.25; // Used to be 7 but that was never used in autobuilder(and maybe way too high)
   public static final double translation_kI = 0.05;
   public static final double translation_kD = 0;
   public static final double angular_kP =
-      3.5; // Used to be 6 but that was never used in autobuilder(and maybe way too high)
-  public static final double angular_kI = 0.1;
+      1.5; // Used to be 6 but that was never used in autobuilder(and maybe way too high)
+  public static final double angular_kI = 0;
   public static final double angular_kIzone = 0.05;
   public static final double angular_kD = 0.02;
 

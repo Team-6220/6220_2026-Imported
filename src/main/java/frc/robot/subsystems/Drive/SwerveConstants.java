@@ -55,18 +55,20 @@ public final class SwerveConstants {
   private static final double COMP_MOTOR_FREE_SPEED_RPM = 6000.0; // Kraken
   private static final Distance COMP_TRACK_WIDTH = Inches.of(22.75);
   private static final Distance COMP_WHEEL_BASE = Inches.of(20.75);
+  // Robot front turned 180° to match the real front (it used to be the back): each module moved to
+  // the diagonally opposite corner label, and +180 so its wheel's 0° points toward the new front.
   private static final SwerveModuleConstants COMP_BACK_RIGHT_MODULE =
       new SwerveModuleConstants(
-          8, 10, 4, org.wpilib.math.geometry.Rotation2d.fromDegrees(120.5859375));
+          6, 9, 3, org.wpilib.math.geometry.Rotation2d.fromDegrees(115.927734375 + 180));
   private static final SwerveModuleConstants COMP_BACK_LEFT_MODULE =
       new SwerveModuleConstants(
-          5, 12, 2, org.wpilib.math.geometry.Rotation2d.fromDegrees(-179.208984375));
+          7, 11, 1, org.wpilib.math.geometry.Rotation2d.fromDegrees(-94.306640625 + 180));
   private static final SwerveModuleConstants COMP_FRONT_RIGHT_MODULE =
       new SwerveModuleConstants(
-          7, 11, 1, org.wpilib.math.geometry.Rotation2d.fromDegrees(-94.306640625));
+          5, 12, 2, org.wpilib.math.geometry.Rotation2d.fromDegrees(-179.208984375 + 180));
   private static final SwerveModuleConstants COMP_FRONT_LEFT_MODULE =
       new SwerveModuleConstants(
-          6, 9, 3, org.wpilib.math.geometry.Rotation2d.fromDegrees(115.927734375));
+          8, 10, 4, org.wpilib.math.geometry.Rotation2d.fromDegrees(120.5859375 + 180));
   private static final DCMotor COMP_DC_MOTOR = new DCMotor(12, 7.09, 366, 2, 628.32, 1);
   private static final double COMP_DRIVE_KP = 0.12;
   private static final double COMP_DRIVE_KI = 0;

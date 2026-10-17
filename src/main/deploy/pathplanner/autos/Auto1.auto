@@ -9,6 +9,12 @@
           "data": {
             "pathName": "newpath"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "alignAndShoot"
+          }
         }
       ]
     }

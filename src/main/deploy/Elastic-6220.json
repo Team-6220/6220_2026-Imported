@@ -174,7 +174,7 @@
             "height": 128.0,
             "type": "ComboBox Chooser",
             "properties": {
-              "topic": "/Dashboard/Auto Chooser",
+              "topic": "/Tunables/Auto Chooser",
               "period": 0.06,
               "sort_options": false
             }

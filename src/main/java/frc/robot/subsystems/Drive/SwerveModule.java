@@ -75,6 +75,23 @@ public class SwerveModule {
     return inputs.absoluteAngle;
   }
 
+  /** Module angle from the NEO encoder, NOT wrapped (keeps counting past 360). For debugging. */
+  public double getUnwrappedAngleDegrees() {
+    return Math.toDegrees(inputs.anglePositionRad.baseUnitMagnitude());
+  }
+
+  /** Module angle from the CANcoder minus the offset, -180 to 180. For debugging. */
+  public double getAbsoluteAngleDegrees() {
+    return inputs.absoluteAngle.minus(config.angleOffset).getDegrees();
+  }
+
+  /** Angle last sent to setDesiredVelocities (after optimize), -180 to 180. For debugging. */
+  public double getLastDesiredAngleDegrees() {
+    return lastDesiredAngleDegrees;
+  }
+
+  private double lastDesiredAngleDegrees;
+
   public int getModuleNumber() {
     return moduleNumber;
   }
@@ -82,6 +99,7 @@ public class SwerveModule {
   public void setDesiredVelocities(SwerveModuleVelocity velocities, boolean isOpenLoop) {
     // optimize
     velocities = velocities.optimize(getVelocities().angle);
+    lastDesiredAngleDegrees = velocities.angle.getDegrees();
 
     // angle control
     io.setAnglePosition(RevConfigs.CANCoderAngleToNeoEncoder(velocities.angle.getRotations()));

@@ -112,7 +112,12 @@ public class SwerveModuleIOTalonFXSparkMax implements SwerveModuleIO {
   public void resetToAbsolute(Rotation2d offset) {
     double absolutePosition =
         absoluteAngleEncoder.getAbsolutePosition().getValueAsDouble() - offset.getRotations();
-    angleBuiltInEncoder.setPosition(RevConfigs.CANCoderAngleToNeoEncoder(absolutePosition));
+    // The NEO encoder doesn't wrap, so use the equivalent of absolutePosition closest to where it
+    // reads now (module rotations). Otherwise the reading can jump a whole module turn while the
+    // Spark still holds its old setpoint, and the module whips around for a loop.
+    double current = RevConfigs.NeoEncoderAngleToCANCoder(angleBuiltInEncoder.getPosition().get());
+    double nearest = current + MathUtil.inputModulus(absolutePosition - current, -0.5, 0.5);
+    angleBuiltInEncoder.setPosition(RevConfigs.CANCoderAngleToNeoEncoder(nearest));
   }
 
   @Override

@@ -10,20 +10,26 @@ import org.wpilib.driverstation.Alliance;
 import org.wpilib.driverstation.MatchType;
 import org.wpilib.driverstation.DriverStationErrors;
 
-// TODO: AUTO - PathPlanner doesn't support WPILib 2027 alpha 7 yet.
-// import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 
+import java.util.function.Supplier;
 import org.wpilib.driverstation.GenericHID;
 import org.wpilib.driverstation.Joystick;
 import org.wpilib.telemetry.Telemetry;
 import org.wpilib.telemetry.TelemetryTable;
-import frc.lib.util.DashboardChooser;
+import org.wpilib.tunable.Selectable;
+import org.wpilib.tunable.Tunables;
 import org.wpilib.command2.Command;
 import org.wpilib.command2.Commands;
 import org.wpilib.command2.InstantCommand;
 import org.wpilib.command2.button.CommandXboxController;
 import org.wpilib.command2.button.Trigger;
 import frc.robot.commands.AlignAndFlywheels;
+import frc.robot.commands.AlignAndMove;
+import frc.robot.commands.HashShootAuto;
+import frc.robot.commands.Autos.FollowPathAuto;
 import frc.robot.commands.ArmToPositionCommand;
 import frc.robot.commands.ArmUpAndDown;
 import frc.robot.commands.Autos.BasicAutoBlue;
@@ -54,7 +60,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   // private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
 
-  private final DashboardChooser<Command> autoChooser;
+  private final Selectable<Supplier<Command>> autoChooser = new Selectable<>();
 
   /* Subsystems */
   private final AdressableLEDs s_LED = new AdressableLEDs();
@@ -78,13 +84,15 @@ public class RobotContainer {
   // Reverse kicker to clear jammed balls. Kicker normally feeds at ~1200 RPM (~20% of free speed),
   // so reverse harder than that to push a stuck ball back out.
   private static final double KICKER_REVERSE_PERCENT = 0.5;
+  // Arm setpoints (same values as the arm0 / arm90 button bindings below)
+  private static final double ARM_DOWN = -2;
+  private static final double ARM_UP = -29.785476684570312;
 
   public RobotContainer() {
     // Initialize climber subsystem based on robot mode
 
     // Configure the trigger bindings
-    // TODO: AUTO - re-enable once PathPlanner supports WPILib 2027 alpha 7.
-    // s_Swerve.configureAutoBuilder();
+    s_Swerve.configureAutoBuilder();
     s_Swerve.zeroHeading(m_driverController.getController());
 
     s_Swerve.setDefaultCommand(
@@ -92,23 +100,59 @@ public class RobotContainer {
 
     arm.setDefaultCommand(new ManualArm(m_joystick));
 
-    autoChooser = new DashboardChooser<>("/Dashboard/Auto Chooser");
+    // Must be registered before any PathPlanner path or auto is loaded
+    registerNamedCommands();
 
-    // TODO: Register named commands as needed for auto
-    // NamedCommands.registerCommand("AutoClimber", new AutoClimberCommand(climberSubsystem));
-
-    autoChooser.add("Do nothing", new InstantCommand());
-    // NamedCommands.registerCommand(null, null);
+    // Autos are built when auto starts (not here) so they see the current alliance
+    // (e.g. BasicAuto reads Constants.isRed in its constructor).
+    autoChooser.add("Do nothing", InstantCommand::new);
+    autoChooser.addDefault(
+        "basicAuto", () -> new BasicAuto(s_Swerve, m_angler, m_shooter, belt, m_driverController));
     autoChooser.add(
-        "Red", new BasicAutoRed(s_Swerve, m_angler, m_shooter, belt, m_driverController));
+        "Red", () -> new BasicAutoRed(s_Swerve, m_angler, m_shooter, belt, m_driverController));
     autoChooser.add(
-        "Blue", new BasicAutoBlue(s_Swerve, m_angler, m_shooter, belt, m_driverController));
-    autoChooser.add("samautov1", new SamAutoV1(s_Swerve));
-    autoChooser.add("samautov2", new SamAutoV2(s_Swerve));
-    autoChooser.onChange(command -> System.out.println("Auto selected: " + command.getName()));
-    autoChooser.addDefault("brightAuto", new BrightTryMakeAuto(s_Swerve, arm, m_driverController, m_angler, m_shooter, belt));
+        "Blue", () -> new BasicAutoBlue(s_Swerve, m_angler, m_shooter, belt, m_driverController));
+    autoChooser.add("samautov1", () -> new SamAutoV1(s_Swerve));
+    autoChooser.add("samautov2", () -> new SamAutoV2(s_Swerve));
+    autoChooser.add(
+        "brightAuto",
+        () -> new BrightTryMakeAuto(s_Swerve, arm, m_driverController, m_angler, m_shooter, belt));
+    autoChooser.add("stationToShoot", () -> new FollowPathAuto(s_Swerve, "stationtoshoot"));
+    // Every .auto made in PathPlanner (deploy/pathplanner/autos/) shows up as "PP: <name>"
+    for (String autoName : AutoBuilder.getAllAutoNames()) {
+      autoChooser.add("PP: " + autoName, () -> new PathPlannerAuto(autoName));
+    }
+    // Published to NT at /Tunables/Auto Chooser (Elastic "ComboBox Chooser" widget)
+    Tunables.publish("Auto Chooser", autoChooser);
 
     configureBindings();
+  }
+
+  /**
+   * Commands PathPlanner can run by name, from "Named Command" blocks in a .auto or event markers
+   * on a path. The name typed in PathPlanner must match exactly (case-sensitive).
+   *
+   * <p>Commands that never end ("intake", "outtake", "shoot") should go in an event marker zone
+   * (runs while the robot is in that part of the path), or in a deadline/race group in a .auto.
+   * "align" and "alignAndShoot" drive the robot, so only use them between paths, not as markers.
+   */
+  private void registerNamedCommands() {
+    NamedCommands.registerCommand(
+        "intake",
+        Commands.parallel(new TestRollerCommand(true), new ArmToPositionCommand(arm, ARM_DOWN)));
+    NamedCommands.registerCommand("outtake", new TestRollerCommand(false));
+    NamedCommands.registerCommand("armDown", new ArmToPositionCommand(arm, ARM_DOWN));
+    NamedCommands.registerCommand("armUp", new ArmToPositionCommand(arm, ARM_UP));
+    NamedCommands.registerCommand("shoot", new HashShootAuto(m_angler, m_shooter, belt));
+    NamedCommands.registerCommand(
+        "align",
+        new AlignAndMove(s_Swerve, m_driverController, m_driverController.rightBumper())
+            .withTimeout(2));
+    NamedCommands.registerCommand(
+        "alignAndShoot",
+        new AlignAndMove(s_Swerve, m_driverController, m_driverController.rightBumper())
+            .withTimeout(2)
+            .andThen(new HashShootAuto(m_angler, m_shooter, belt).withTimeout(4)));
   }
 
   /**
@@ -268,13 +312,9 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    Command selected = new BasicAuto(s_Swerve, m_angler, m_shooter, belt, m_driverController);
-    System.out.println("Auto: " + autoChooser.getSelectedName());
-    return selected;
-  }
-
-  /** Syncs the auto chooser with the dashboard. Call from robotPeriodic. */
-  public void updateAutoChooser() {
-    autoChooser.update();
+    Supplier<Command> selected = autoChooser.getSelected();
+    Command auto = selected != null ? selected.get() : null;
+    System.out.println("Auto: " + (auto != null ? auto.getName() : "none"));
+    return auto;
   }
 }
