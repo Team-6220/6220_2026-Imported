@@ -30,6 +30,7 @@ import frc.robot.commands.AlignAndFlywheels;
 import frc.robot.commands.AlignAndMove;
 import frc.robot.commands.HashShootAuto;
 import frc.robot.commands.Autos.FollowPathAuto;
+import frc.robot.commands.SeedPoseFromVision;
 import frc.robot.commands.ArmToPositionCommand;
 import frc.robot.commands.ArmUpAndDown;
 import frc.robot.commands.Autos.BasicAutoBlue;
@@ -88,6 +89,11 @@ public class RobotContainer {
   private static final double ARM_DOWN = -2;
   private static final double ARM_UP = -29.785476684570312;
 
+  /** Resets the field heading so the robot's current front faces away from our driver station. */
+  public void zeroHeading() {
+    s_Swerve.zeroHeading();
+  }
+
   public RobotContainer() {
     // Initialize climber subsystem based on robot mode
 
@@ -117,7 +123,7 @@ public class RobotContainer {
     autoChooser.add(
         "brightAuto",
         () -> new BrightTryMakeAuto(s_Swerve, arm, m_driverController, m_angler, m_shooter, belt));
-    autoChooser.add("stationToShoot", () -> new FollowPathAuto(s_Swerve, "stationtoshoot"));
+    autoChooser.add("tinyPath", () -> new FollowPathAuto(s_Swerve, "tinyPath"));
     // Every .auto made in PathPlanner (deploy/pathplanner/autos/) shows up as "PP: <name>"
     for (String autoName : AutoBuilder.getAllAutoNames()) {
       autoChooser.add("PP: " + autoName, () -> new PathPlannerAuto(autoName));
@@ -137,6 +143,9 @@ public class RobotContainer {
    * "align" and "alignAndShoot" drive the robot, so only use them between paths, not as markers.
    */
   private void registerNamedCommands() {
+    // Put first in every .auto: overrides PathPlanner's Reset Odometry with MegaTag1 when 2+ tags
+    // are visible
+    NamedCommands.registerCommand("seedPose", new SeedPoseFromVision(s_Swerve));
     NamedCommands.registerCommand(
         "intake",
         Commands.parallel(new TestRollerCommand(true), new ArmToPositionCommand(arm, ARM_DOWN)));
@@ -148,6 +157,10 @@ public class RobotContainer {
         "align",
         new AlignAndMove(s_Swerve, m_driverController, m_driverController.rightBumper())
             .withTimeout(2));
+    // Possible issue (unconfirmed): AlignAndMove.end() switches the Limelight back to pipeline 0,
+    // and HashShootAuto reads getDist() once in initialize() right after. If no frame from the new
+    // pipeline has arrived yet, the read may see no tag and the whole shot uses the -1 (100 RPM)
+    // table entry. Log getDist() at shoot start to check.
     NamedCommands.registerCommand(
         "alignAndShoot",
         new AlignAndMove(s_Swerve, m_driverController, m_driverController.rightBumper())

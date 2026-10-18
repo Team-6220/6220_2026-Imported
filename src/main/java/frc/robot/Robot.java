@@ -101,7 +101,19 @@ public class Robot extends TimedRobot {
   public void disabledInit() {}
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    // The startup zeroHeading runs before the DS reports an alliance, which leaves red 180 deg off.
+    // Re-zero whenever the alliance becomes known or changes, but only while disabled.
+    Optional<Alliance> ally = MatchState.getAlliance();
+    String alliance = "N/A";
+    if (ally.isPresent()) {
+      alliance = (ally.get() == Alliance.RED) ? "red" : "blue";
+    }
+    if (!alliance.equals(Constants.isRed)) {
+      Constants.isRed = alliance;
+      m_robotContainer.zeroHeading();
+    }
+  }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override

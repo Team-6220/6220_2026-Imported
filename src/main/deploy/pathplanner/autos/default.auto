@@ -5,6 +5,12 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "seedPose"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "getToClimber"

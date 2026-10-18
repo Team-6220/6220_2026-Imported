@@ -81,6 +81,10 @@ public class Swerve extends SubsystemBase {
 
   public Field2d field2d = new Field2d();
   private final Field2d megatag2Pose = new Field2d();
+  // Copy of field2d for Elastic, whose Field widget can't decode the 2027 struct:Pose2d[] format
+  // and draws the robot at (0, 0). Uses the old {x, y, degrees} double[] format instead.
+  // AdvantageScope keeps using "Field 2d".
+  private final TelemetryTable m_elasticField = m_driveTelemetry.getTable("Elastic Field");
 
   private double lastTurnUpdate;
   private double autoTurnHeading;
@@ -169,7 +173,10 @@ public class Swerve extends SubsystemBase {
 
     // Set up custom logging to add the current path to a field 2d widget
     PathPlannerLogging.setLogActivePathCallback(
-        (poses) -> field2d.getObject("path").setPoses(poses));
+        (poses) -> {
+          field2d.getObject("path").setPoses(poses);
+          m_elasticField.log("path", toElasticPoses(poses.toArray(new Pose2d[0])));
+        });
 
     // See https://pathplanner.dev/robot-config.html#bumper-config-options for setting RobotConfig
     // up manually, and https://pathplanner.dev/api/java/com/pathplanner/lib/config/RobotConfig.html
@@ -564,9 +571,23 @@ public class Swerve extends SubsystemBase {
     }
   }
 
+  /** Flattens poses into Elastic's {x, y, degrees, x, y, degrees, ...} Field2d format. */
+  private static double[] toElasticPoses(Pose2d... poses) {
+    double[] out = new double[poses.length * 3];
+    for (int i = 0; i < poses.length; i++) {
+      out[i * 3] = poses[i].getX();
+      out[i * 3 + 1] = poses[i].getY();
+      out[i * 3 + 2] = poses[i].getRotation().getDegrees();
+    }
+    return out;
+  }
+
   private void updateTelemetry() {
     field2d.setRobotPose(getPose());
     m_driveTelemetry.log("Field 2d", field2d);
+    if (m_elasticField.setType("Field2d")) {
+      m_elasticField.log("Robot", toElasticPoses(getPose()));
+    }
     m_driveTelemetry.log("megatag2", megatag2Pose);
     m_driveTelemetry.log("where the bot think it is swerve x", getPose().getX());
     m_driveTelemetry.log("where the bot think it is swerve y", getPose().getY());

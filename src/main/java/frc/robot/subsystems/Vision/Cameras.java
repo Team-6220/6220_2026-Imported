@@ -6,17 +6,17 @@ package frc.robot.subsystems.Vision;
 
 import com.limelightvision.Limelight;
 import com.limelightvision.LimelightResults;
+import com.limelightvision.PoseEstimate;
 import com.limelightvision.PoseEstimateConfig;
+import com.limelightvision.PoseEstimateType;
+import com.limelightvision.Status;
+import java.util.Optional;
+import org.wpilib.math.geometry.Pose2d;
 
 /** Shared LimelightLib 2 camera instances. */
 public final class Cameras {
   private Cameras() {}
 
-  // TODO: Measure the physical mount and replace these placeholders. Offsets are from the
-  // robot's origin (center of the drivetrain, floor height) to the camera lens.
-  // LimelightLib 2 uses right-handed NWU: X forward, Y left, Z up. Positive pitch tilts the
-  // camera DOWN, so a camera tilted up 55 degrees is -55. (LimelightHelpers used Y right and
-  // positive pitch = up, so side and pitch signs are flipped compared to the old values.)
   private static final double CAMERA_FORWARD_METERS = 0.0142638526;
   private static final double CAMERA_LEFT_METERS = 0.0;
   private static final double CAMERA_UP_METERS = 0.5161723992;
@@ -24,6 +24,16 @@ public final class Cameras {
   private static final double CAMERA_PITCH_DEGREES = -55;
   private static final double CAMERA_YAW_DEGREES = 0.0;
   
+
+  // MegaTag1 filtering, only used to seed the starting pose (including heading) when auto starts.
+  // Requires 2+ tags since single-tag MT1 can flip to an ambiguous pose.
+  private static final PoseEstimateConfig MT1_CONFIG =
+      PoseEstimateConfig.defaultMT1()
+          .withMinTagCount(2)
+          .withMaxAvgTagDistance(6.0)
+          .withMinAvgTagArea(0.05) // 0-100, percentage of image area
+          .withFieldBounds(16.541, 8.069) // 2026 welded field
+          .withFieldBoundsMargin(0.5);
 
   // MegaTag2 filtering and trust scaling. Starting values from the LimelightLib 2 docs; tune on
   // the robot.
@@ -54,10 +64,24 @@ public final class Cameras {
               CAMERA_ROLL_DEGREES,
               CAMERA_PITCH_DEGREES,
               CAMERA_YAW_DEGREES)
+          .withPoseEstimateConfig_MT1(MT1_CONFIG)
           .withPoseEstimateConfig_MT2(MT2_CONFIG);
 
   static {
     FRONT.setPipelineIndex(0);
+  }
+
+  /**
+   * Gets a full field pose (including heading) from MegaTag1, which doesn't use the gyro. Uses the
+   * newest frame without consuming the queue, since Swerve.periodic() reads the queue for MT2.
+   *
+   * @return The blue-origin pose if the camera is live and sees 2+ tags, otherwise empty
+   */
+  public static Optional<Pose2d> getMT1StartPose() {
+    if (FRONT.getStatus() != Status.OK) return Optional.empty();
+    PoseEstimate estimate = FRONT.getPoseEstimate(PoseEstimateType.MT1_WPIBLUE);
+    if (!estimate.isValid() || estimate.fieldedTagCount < 2) return Optional.empty();
+    return Optional.of(estimate.pose);
   }
 
   /**

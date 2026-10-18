@@ -84,7 +84,8 @@ public final class IOConstants {
 
     inputs[0] = IOConstants.modifyMoveAxis(-driver.getAxis(translationAxis));
     inputs[1] = IOConstants.modifyMoveAxis(-driver.getAxis(strafeAxis));
-    inputs[2] = IOConstants.modifyRotAxis(driver.getAxis(rotationAxis));
+    // Negated: stick right is +X, but +omega is counter-clockwise; drivers want right = clockwise
+    inputs[2] = IOConstants.modifyRotAxis(-driver.getAxis(rotationAxis));
 
     inputs[0] = MathUtil.applyDeadband(inputs[0], IOConstants.kDeadband);
     inputs[1] = MathUtil.applyDeadband(inputs[1], IOConstants.kDeadband);
