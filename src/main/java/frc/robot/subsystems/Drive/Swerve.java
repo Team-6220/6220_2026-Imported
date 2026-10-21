@@ -6,6 +6,7 @@ import static org.wpilib.units.Units.Radians;
 import com.limelightvision.Limelight;
 import com.limelightvision.PoseEstimate;
 import com.limelightvision.PoseEstimateType;
+import com.limelightvision.Status;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
@@ -95,6 +96,14 @@ public class Swerve extends SubsystemBase {
   private double lastYawRateTimestamp = Timer.getTimestamp();
   // Limelight's recommended cutoff for trusting MegaTag2 while rotating.
   private static final double MAX_MT2_YAW_RATE_DEG_PER_SEC = 720.0;
+
+  /** Pose heading vs MegaTag1 heading difference that raises the heading-slip warning. */
+  public static final double HEADING_SLIP_WARNING_DEG = 3.0;
+
+  // MegaTag2 never corrects heading, so MegaTag1 (no gyro) is used as an independent check.
+  private boolean headingSlipping = false;
+  private double lastMt1Timestamp = -1;
+  private double lastHeadingSlipDeg = 0.0;
 
   private final int swerveAlignUpdateSecond = 20;
 
@@ -551,6 +560,10 @@ public class Swerve extends SubsystemBase {
       poseEstimator.addVisionMeasurement(
           estimate.pose, estimate.timestampSeconds, estimate.stdDevs);
     }
+
+    if (!spinningTooFast) {
+      updateHeadingSlip();
+    }
     // vision stuff ends
 
     if (TunableHelper.consumeChanged(
@@ -569,6 +582,36 @@ public class Swerve extends SubsystemBase {
               AutoConstants.angularMaxVelRadPerSec(), AutoConstants.angularMaxAccelRadPerSecSq()));
       turnPidController.reset(getHeadingRads());
     }
+  }
+
+  /**
+   * Compares the newest MegaTag1 heading (2+ tags, no gyro) against the pose heading at that
+   * frame's timestamp. With no new valid frame, the warning holds its last value, so losing sight
+   * of the tags doesn't clear a real slip.
+   *
+   * <p>Runs every loop. If this causes loop overruns, run it every few loops or only while LT is
+   * held (see SHOOTING-USING-POSE-PLAN.md).
+   */
+  private void updateHeadingSlip() {
+    if (Cameras.FRONT.getStatus() != Status.OK) return;
+    PoseEstimate mt1 = Cameras.FRONT.getPoseEstimate(PoseEstimateType.MT1_WPIBLUE);
+    // Single-tag MT1 can flip to an ambiguous pose, so require 2+ tags
+    if (!mt1.isValid() || mt1.fieldedTagCount < 2) return;
+    if (mt1.timestampSeconds == lastMt1Timestamp) return;
+    lastMt1Timestamp = mt1.timestampSeconds;
+
+    // Pose at the frame's capture time, so camera latency while turning isn't counted as slip
+    Pose2d sampledPose = poseEstimator.sampleAt(mt1.timestampSeconds).orElse(getPose());
+    lastHeadingSlipDeg = mt1.pose.getRotation().minus(sampledPose.getRotation()).getDegrees();
+    headingSlipping = Math.abs(lastHeadingSlipDeg) > HEADING_SLIP_WARNING_DEG;
+  }
+
+  /**
+   * @return true if the MegaTag1 heading disagrees with the pose heading by more than {@link
+   *     #HEADING_SLIP_WARNING_DEG}
+   */
+  public boolean isHeadingSlipping() {
+    return headingSlipping;
   }
 
   /** Flattens poses into Elastic's {x, y, degrees, x, y, degrees, ...} Field2d format. */
@@ -606,5 +649,7 @@ public class Swerve extends SubsystemBase {
     m_driveTelemetry.log("Auto Turn Heading", autoTurnHeading);
     m_driveTelemetry.log("Turn Controller Setpoint", turnPidController.getSetpoint().position);
     m_driveTelemetry.log("is Red", Constants.isRed.equals("red"));
+    m_driveTelemetry.log("MT1 Heading Slip Deg", lastHeadingSlipDeg);
+    m_driveTelemetry.log("Heading Slip Warning", headingSlipping);
   }
 }

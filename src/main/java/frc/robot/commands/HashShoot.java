@@ -40,15 +40,6 @@ public class HashShoot extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    try {
-      dist = m_shoot.getDist();
-      rpm = ShooterConstants.rpmAngle.get(dist)[0];
-      degrees = ShooterConstants.rpmAngle.get(dist)[1];
-    } catch (Exception e) {
-      System.out.println("Error occurred while initializing HashShoot command.");
-      rpm = ShooterConstants.rpmAngle.get(0.0)[0];
-      degrees = ShooterConstants.rpmAngle.get(0.0)[1];
-    }
     // Reset shooter state for new shot sequence (enables first shot boost)
     m_shoot.resetShootingState();
   }
@@ -56,6 +47,26 @@ public class HashShoot extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    // Looked up every loop so RPM and angle follow the pose while the driver moves.
+    // If shooting is jittery (setpoints jumping as the distance crosses 0.2 m table keys), move
+    // this lookup back into initialize() first so each LT press locks in one distance.
+    try {
+      dist = m_shoot.getDist();
+      rpm = ShooterConstants.rpmAngle.get(dist)[0];
+      degrees = ShooterConstants.rpmAngle.get(dist)[1];
+    } catch (Exception e) {
+      System.out.println("Error occurred while looking up the HashShoot table.");
+      rpm = ShooterConstants.rpmAngle.get(0.0)[0];
+      degrees = ShooterConstants.rpmAngle.get(0.0)[1];
+    }
+
+    // Interpolation (see ShooterConstants): replaces the try/catch above. get() never returns
+    // null, and RPM/angle change smoothly instead of jumping at each 0.2 m key.
+    //
+    // double meters = m_shoot.getRawDist();
+    // rpm = ShooterConstants.RPM.get(meters);
+    // degrees = ShooterConstants.ANGLE.get(meters);
+
     m_angler.setAngle(degrees);
     m_shoot.runAtTargetVelocity(rpm, controller, 1200);
     m_belt.simpleDrive(-0.5);

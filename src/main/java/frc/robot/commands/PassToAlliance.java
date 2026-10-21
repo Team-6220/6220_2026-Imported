@@ -46,7 +46,10 @@ public class PassToAlliance extends Command {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    // Reset shooter state for new shot sequence (enables first shot boost)
+    m_shoot.resetShootingState();
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override

@@ -40,6 +40,29 @@ public class ShooterConstants {
         }
       };
 
+  // ========== Interpolation (not in use yet) ==========
+  // Blends between the two nearest rpmAngle entries instead of rounding to the nearest 0.2 m key,
+  // so a shot at 2.3 m gets values halfway between the 2.2 and 2.4 entries. Past either end of the
+  // table, get() holds the end value, so no clamping or null checks are needed.
+  // To use: uncomment this, ShooterSubsystem.getRawDist(), and the lookup in HashShoot.execute().
+  //
+  // public static final org.wpilib.math.interpolation.InterpolatingDoubleTreeMap RPM =
+  //     new org.wpilib.math.interpolation.InterpolatingDoubleTreeMap();
+  // public static final org.wpilib.math.interpolation.InterpolatingDoubleTreeMap ANGLE =
+  //     new org.wpilib.math.interpolation.InterpolatingDoubleTreeMap();
+  // public static final org.wpilib.math.interpolation.InterpolatingDoubleTreeMap BOOST =
+  //     new org.wpilib.math.interpolation.InterpolatingDoubleTreeMap();
+  //
+  // static {
+  //   for (var entry : rpmAngle.entrySet()) {
+  //     // Skip the -1.0 test entry: interpolating toward it would bend real short shots
+  //     if (entry.getKey() < 0) continue;
+  //     RPM.put(entry.getKey(), entry.getValue()[0]);
+  //     ANGLE.put(entry.getKey(), entry.getValue()[1]);
+  //     BOOST.put(entry.getKey(), entry.getValue()[2]);
+  //   }
+  // }
+
   public static final double topTESTrpm = 1600.0;
 
   public static final double bottomTESTrpm = 1200;

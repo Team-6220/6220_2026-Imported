@@ -17,14 +17,15 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.limelightvision.LimelightResults;
 import frc.lib.util.TunableHelper;
 import frc.robot.subsystems.Vision.Cameras;
+import java.util.function.Supplier;
 import org.wpilib.command2.Command;
 import org.wpilib.command2.SubsystemBase;
 import org.wpilib.command2.button.CommandXboxController;
 import org.wpilib.command2.sysid.SysIdRoutine;
 import org.wpilib.hardware.bus.CANPort;
+import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.telemetry.Telemetry;
 import org.wpilib.telemetry.TelemetryTable;
 import org.wpilib.tunable.TunableDouble;
@@ -102,7 +103,18 @@ public class ShooterSubsystem extends SubsystemBase {
   /** Records the peak RPM achieved during the boost phase */
   private double peakRPM = 0.0;
 
-  public ShooterSubsystem() {
+  // Robot field pose (Swerve odometry + MegaTag2), used for the distance to the hub
+  private final Supplier<Pose2d> m_poseSupplier;
+
+  // Smallest and largest real distance keys in ShooterConstants.rpmAngle
+  private static final double MIN_TABLE_DISTANCE_M = 0.0;
+  private static final double MAX_TABLE_DISTANCE_M = 4.4;
+
+  /**
+   * @param poseSupplier the robot's field pose, used for the distance to the hub
+   */
+  public ShooterSubsystem(Supplier<Pose2d> poseSupplier) {
+    m_poseSupplier = poseSupplier;
     CANPort shooterCANPort = CANPort.CAN_S1;
     CANBus shooterCANBus = new CANBus(shooterCANPort);
     m_motor41 = new TalonFX(MOTOR_41_ID, new CANBus(CANPort.CAN_S3));
@@ -191,12 +203,11 @@ public class ShooterSubsystem extends SubsystemBase {
    * @param controller The Xbox controller instance.
    */
   public void runAtTargetVelocity(double topRPM, CommandXboxController controller, double kicker) {
-    // Handle new RPM target (first call or RPM changed)
+    // Follow a changed RPM target (HashShoot looks it up every loop, so it changes whenever the
+    // pose distance crosses a 0.2 m table key) without restarting the first-shot boost. The boost
+    // only restarts in resetShootingState(), which commands call once per button press.
     if (normalTargetRPM != topRPM) {
       normalTargetRPM = topRPM;
-      isFirstShot = true;
-      initialRPMRecorded = false;
-      peakRPM = 0.0;
       boostedTargetRPM = topRPM * getBoostMultiplier();
     }
 
@@ -505,10 +516,10 @@ public class ShooterSubsystem extends SubsystemBase {
 
   /**
    * Returns the first-shot boost multiplier for the current distance, falling back to {@link
-   * ShooterConstants#FIRST_SHOT_BOOST_MULTIPLIER} when no tag is seen or the distance is not in
-   * the table (e.g. when passing).
+   * ShooterConstants#FIRST_SHOT_BOOST_MULTIPLIER} when the table entry has no boost set.
    */
   private double getBoostMultiplier() {
+    // Interpolation (see ShooterConstants): return ShooterConstants.BOOST.get(getRawDist());
     Double[] entry = ShooterConstants.rpmAngle.get(getDist());
     if (entry == null || entry[2] <= 0.0) {
       return ShooterConstants.FIRST_SHOT_BOOST_MULTIPLIER;
@@ -516,17 +527,26 @@ public class ShooterSubsystem extends SubsystemBase {
     return entry[2];
   }
 
+  /**
+   * Gets the floor-plane distance from the robot to our hub's center, rounded to the shot table's
+   * 0.2 m keys and clamped to the table's range so {@code rpmAngle.get()} never returns null.
+   */
   public double getDist() {
-    if (!Cameras.FRONT.hasTarget()) return -1.0;
-    LimelightResults results = Cameras.FRONT.getLatestResults();
-    if (results.fiducialTargets == null || results.fiducialTargets.length == 0) return -1.0;
-    // Camera space is NWU (X out of the lens), so forward distance is X
-    int a = (int) (results.fiducialTargets[0].getTargetPose_CameraSpace().getX() * 100);
+    double meters = HubTargeting.getDistanceMeters(m_poseSupplier.get());
+    meters = Math.max(MIN_TABLE_DISTANCE_M, Math.min(MAX_TABLE_DISTANCE_M, meters));
+    int a = (int) (meters * 100);
     double b = (double) a;
     b = b / 20.0;
     b = Math.round(b) * 2.0;
     return b / 10.0;
   }
+
+  // For interpolation (see ShooterConstants): the unrounded, unclamped distance to the hub center.
+  // The interpolating maps blend between keys and hold their end values, so no rounding is needed.
+  //
+  // public double getRawDist() {
+  //   return HubTargeting.getDistanceMeters(m_poseSupplier.get());
+  // }
 
   @Override
   public void periodic() {
@@ -539,6 +559,10 @@ public class ShooterSubsystem extends SubsystemBase {
       ShooterConstants.FIRST_SHOT_BOOST_MULTIPLIER = m_firstShotBoostTN.get();
     }
     m_shooterTelemetry.log("Shooter/ForwardDistance", getDist());
+    Pose2d pose = m_poseSupplier.get();
+    // Unrounded distance and aim error, for checking the pose against tape measurements
+    m_shooterTelemetry.log("Shooter/RawHubDistance", HubTargeting.getDistanceMeters(pose));
+    m_shooterTelemetry.log("Shooter/HubHeadingErrorDeg", HubTargeting.getHeadingErrorDegrees(pose));
 
     // RPM Telemetry
     m_shooterTelemetry.log("Shooter/Motor41RPM", getMotor41RPM());

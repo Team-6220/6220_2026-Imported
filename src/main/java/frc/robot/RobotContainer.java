@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import static frc.robot.commands.AlignAndMove.ALIGN_TOLERANCE_DEG;
+
 import org.wpilib.driverstation.MatchState;
 import org.wpilib.driverstation.RobotState;
 import org.wpilib.driverstation.Alliance;
@@ -46,6 +48,7 @@ import frc.robot.subsystems.Intake.BeltSubsystem;
 import frc.robot.subsystems.Intake.RollerSubsystem;
 import frc.robot.subsystems.LEDs.AdressableLEDs;
 import frc.robot.subsystems.Shooter.AnglerSubsystem;
+import frc.robot.subsystems.Shooter.HubTargeting;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.Vision.Cameras;
 import org.wpilib.driverstation.DriverStation;
@@ -66,7 +69,7 @@ public class RobotContainer {
   /* Subsystems */
   private final AdressableLEDs s_LED = new AdressableLEDs();
   private final Swerve s_Swerve = new Swerve();
-  private final ShooterSubsystem m_shooter = new ShooterSubsystem();
+  private final ShooterSubsystem m_shooter = new ShooterSubsystem(s_Swerve::getPose);
   private final AnglerSubsystem m_angler = new AnglerSubsystem();
   private final ArmSubsystem arm = ArmSubsystem.getInstance();
   private final BeltSubsystem belt = BeltSubsystem.getInstance();
@@ -80,7 +83,6 @@ public class RobotContainer {
   private final TelemetryTable m_shooterTelemetry = Telemetry.getTable("Shooter");
   private final TelemetryTable m_visionTelemetry = Telemetry.getTable("Vision");
 
-  private static final double ALIGN_TOLERANCE_DEG = 2.0;
   private static final double MAX_SHOOT_DISTANCE_M = 4.0;
   // Reverse kicker to clear jammed balls. Kicker normally feeds at ~1200 RPM (~20% of free speed),
   // so reverse harder than that to push a stuck ball back out.
@@ -246,10 +248,10 @@ public class RobotContainer {
     Trigger flywheelsReady = new Trigger(() -> m_shooter.isAtTargetSpeed());
 
     Trigger aligned =
-        new Trigger(
-            () ->
-                Math.abs(Cameras.FRONT.getTXDegrees()) < ALIGN_TOLERANCE_DEG
-                    && Cameras.FRONT.hasTarget());
+        new Trigger(() -> HubTargeting.isAligned(s_Swerve.getPose(), ALIGN_TOLERANCE_DEG));
+
+    // MegaTag1 heading disagrees with the pose heading. Debounced so one noisy frame doesn't flash.
+    Trigger headingSlip = new Trigger(s_Swerve::isHeadingSlipping).debounce(0.25);
 
     Trigger inRange =
         new Trigger(
@@ -269,24 +271,36 @@ public class RobotContainer {
     Trigger isShooting = m_driverController.rightTrigger();
 
     // --- LED bindings (lowest to highest priority) made mutually exclusive ---
+    // Every state below heading slip negates it, so heading slip always wins.
 
     // Aligned but not at speed -> Flashing Green
     aligned
         .and(flywheelsReady.negate())
         .and(isShooting.negate())
+        .and(headingSlip.negate())
         .whileTrue(s_LED.runPattern(s_LED.blink(s_LED.solidGreen(), 0.15)));
 
     // At speed but not aligned OR actively shooting while not aligned -> Flashing Orange
     flywheelsReady
         .or(isShooting)
         .and(aligned.negate())
+        .and(headingSlip.negate())
         .whileTrue(s_LED.runPattern(s_LED.blink(s_LED.solidDarkOrange(), 0.15)));
 
     // Aligned and at speed (but not shooting) -> Solid Green
-    readyToShoot.and(isShooting.negate()).whileTrue(s_LED.runPattern(s_LED.solidGreen()));
+    readyToShoot
+        .and(isShooting.negate())
+        .and(headingSlip.negate())
+        .whileTrue(s_LED.runPattern(s_LED.solidGreen()));
 
     // Actively shooting AND aligned -> Flashing Red
-    isShooting.and(aligned).whileTrue(s_LED.runPattern(s_LED.blink(s_LED.solidRed(), 0.15)));
+    isShooting
+        .and(aligned)
+        .and(headingSlip.negate())
+        .whileTrue(s_LED.runPattern(s_LED.blink(s_LED.solidRed(), 0.15)));
+
+    // Heading slip (MegaTag1 disagrees with pose heading) -> Flashing Pink. Highest priority.
+    headingSlip.whileTrue(s_LED.runPattern(s_LED.blink(s_LED.solidPink(), 0.15)));
 
     // Haptic feedback (rumble): Pulse when target is aligned + in range (before full spin-up).
     readyToShoot.onTrue(
@@ -306,13 +320,13 @@ public class RobotContainer {
 
   /** Publish shooter booleans needed by Elastic dashboard widgets. */
   public void publishDriverDashboardBooleans() {
-    boolean aligned =
-        Cameras.FRONT.hasTarget()
-            && Math.abs(Cameras.FRONT.getTXDegrees()) < ALIGN_TOLERANCE_DEG;
+    boolean aligned = HubTargeting.isAligned(s_Swerve.getPose(), ALIGN_TOLERANCE_DEG);
     double dist = m_shooter.getDist();
     boolean shortRange = dist > 0 && dist <= MAX_SHOOT_DISTANCE_M;
 
     m_shooterTelemetry.log("Shooter/Aligned", aligned);
+    m_visionTelemetry.log("HeadingSlipWarning", s_Swerve.isHeadingSlipping());
+    // TODO: add Vision/HeadingSlipWarning to the Elastic layout (deploy/Elastic-6220.json) later.
     m_shooterTelemetry.log("Shooter/FlywheelsAtTarget", m_shooter.isAtTargetSpeed());
     m_shooterTelemetry.log("Shooter/ShortRange", shortRange);
 
