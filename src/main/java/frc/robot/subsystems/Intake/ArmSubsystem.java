@@ -67,26 +67,43 @@ public class ArmSubsystem extends SubsystemBase {
     public static final int stallLimit = 30;
     public static final int freeLimit = 30;
 
-    public static final boolean armInvert = false;
+    // Inverted so the arm's down direction is positive (motor and built-in encoder flip together).
+    // Measured: top to bottom read -24.36 motor rotations before this was inverted.
+    public static final boolean armInvert = true;
     public static final IdleMode armIdleMode = IdleMode.kBrake;
 
-    public static final double armKp = 0.45;
-    public static final double armKi = 0.1;
+    // Total reduction from the NEO to the arm, measured: top (straight up) to bottom (horizontal)
+    // is ~90 deg and took 27.19 motor rotations, so 27.19 * 360 / 90 = ~108.8:1 (50/14 sprockets
+    // times ~30:1 more). REVLib 2027 has no encoder conversion factor, so getPosition() converts
+    // motor rotations to arm degrees itself. Refine if the 90 deg estimate turns out off.
+    public static final double gearRatio = 27.19 * 360.0 / 90.0;
+    public static final double degreesPerMotorRotation = 360.0 / gearRatio;
+
+    // Arm angles are relative to the top: 0 at the top, positive going down. The gravity
+    // feedforward needs to know where horizontal is, so this is the top's angle above horizontal.
+    // ASSUMPTION: the top is straight up. Change this if the top position isn't vertical.
+    public static final double topAngleAboveHorizontalDeg = 90.0;
+
+    // Gains are per degree of arm. They used to be per motor rotation (3.3 deg each), so the old
+    // kP of 0.45 is 0.45 / 3.31 = ~0.136 per degree.
+    public static final double armKp = 0.136;
+    public static final double armKi = 0.0;
     public static final double armKd = 0.0;
     public static final double armKa = 0.0;
-    public static final double armKg = 0.3;
-    public static final double armKv = 0.2;
+    public static final double armKg = 0.3; // volts to hold the arm level
+    public static final double armKv = 2.2; // volts per rad/s: 12 V / (NEO free speed / gearRatio)
     public static final double armKs = 0.0;
-    public static final double armIZone = 5;
-    public static final double armTolerance = 0.5;
-    public static final double armMaxVel = 200;
-    public static final double armMaxAccel = 800;
+    public static final double armIZone = 5; // degrees
+    public static final double armTolerance = 2; // degrees
+    public static final double armMaxVel = 200; // degrees per second
+    public static final double armMaxAccel = 800; // degrees per second squared
 
     public static final double armIdleVoltage = 0.0;
     public static final double armVoltage = 5;
 
-    public static final double maxDegrees = 1000;
-    public static final double minDegrees = -10000;
+    // Goal limits in arm degrees (0 = top, positive = down, 90 = horizontal/bottom)
+    public static final double maxDegrees = 95;
+    public static final double minDegrees = 0;
   }
 
   public ArmSubsystem() {
@@ -177,10 +194,15 @@ public class ArmSubsystem extends SubsystemBase {
   }
 
   public void swingToGoal() {
+    // ArmFeedforward expects 0 = horizontal and positive voltage moving the angle up. Here 0 is the
+    // top and positive voltage moves the arm down (positive degrees), so shift into a frame where
+    // positive voltage still increases the angle: 180 - top + position. Holding level (position =
+    // top angle) then gives cos(180) = -1, i.e. a negative (lifting) voltage of kG.
+    double ffAngleDeg =
+        180.0 - ArmConstants.topAngleAboveHorizontalDeg + m_Controller.getSetpoint().position;
     feedForwardOutput =
         m_Feedforward.calculate(
-            m_Controller.getSetpoint().position * Math.PI / 180,
-            m_Controller.getSetpoint().velocity * Math.PI / 180);
+            Math.toRadians(ffAngleDeg), Math.toRadians(m_Controller.getSetpoint().velocity));
 
     lastUpdate = Timer.getTimestamp();
     PIDOutput = m_Controller.calculate(getPosition());
@@ -195,12 +217,21 @@ public class ArmSubsystem extends SubsystemBase {
     armEncoder.setPosition(0);
   }
 
+  /**
+   * Tells the relative encoder where the arm is right now. It only knows positions relative to
+   * where it was at power-on, so use this when the arm is at a known spot (e.g. the top).
+   */
+  public void setEncoderPosition(double degrees) {
+    armEncoder.setPosition(degrees / ArmConstants.degreesPerMotorRotation);
+  }
+
   public void resetPID() {
     m_Controller.reset(getPosition());
   }
 
+  /** Arm angle in degrees: 0 at the top, positive going down. */
   public double getPosition() {
-    return armEncoder.getPosition().get();
+    return armEncoder.getPosition().get() * ArmConstants.degreesPerMotorRotation;
   }
 
   public boolean controllerAtGoal() {

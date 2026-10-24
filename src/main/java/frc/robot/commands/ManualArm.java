@@ -29,7 +29,9 @@ public class ManualArm extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double input = m_joystick.getRawAxis(1);
+    // Negated because the arm motor is inverted (down = positive), so the stick still moves the
+    // arm the same way it did before
+    double input = -m_joystick.getRawAxis(1);
     if (Math.abs(input) < 0.1) {
       input = 0;
     }

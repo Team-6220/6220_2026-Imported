@@ -86,8 +86,10 @@ public class RobotContainer {
   // so reverse harder than that to push a stuck ball back out.
   private static final double KICKER_REVERSE_PERCENT = 0.5;
   // Arm setpoints (same values as the arm0 / arm90 button bindings below)
-  private static final double ARM_DOWN = -2;
-  private static final double ARM_UP = -29.785476684570312;
+  // Arm angles in degrees: 0 at the top, positive going down (see ArmSubsystem)
+  private static final double ARM_UP = 0;
+  // Bottom is about horizontal, 90 deg down from straight up
+  private static final double ARM_DOWN = 90;
 
   /** Resets the field heading so the robot's current front faces away from our driver station. */
   public void zeroHeading() {
@@ -152,6 +154,10 @@ public class RobotContainer {
     NamedCommands.registerCommand("outtake", new TestRollerCommand(false));
     NamedCommands.registerCommand("armDown", new ArmToPositionCommand(arm, ARM_DOWN));
     NamedCommands.registerCommand("armUp", new ArmToPositionCommand(arm, ARM_UP));
+    // The arm encoder is relative: it reads 0 wherever the arm was at power-on. Run this first when
+    // the arm starts at the top, so 0 really means the top even if it was powered on elsewhere.
+    NamedCommands.registerCommand(
+        "armZeroAtTop", Commands.runOnce(() -> arm.setEncoderPosition(ARM_UP), arm));
     NamedCommands.registerCommand("shoot", new HashShootAuto(m_angler, m_shooter, belt));
     NamedCommands.registerCommand(
         "align",
