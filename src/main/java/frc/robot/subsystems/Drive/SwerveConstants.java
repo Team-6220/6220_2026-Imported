@@ -75,7 +75,7 @@ public final class SwerveConstants {
   private static final double COMP_DRIVE_KI = 0;
   private static final double COMP_DRIVE_KD = 0;
   private static final double COMP_DRIVE_KS = 0.32;
-  private static final double COMP_DRIVE_KV = 1.51;
+  private static final double COMP_DRIVE_KV = 2.5;
   private static final double COMP_DRIVE_KA = 0.27;
   private static final double COMP_ANGLE_KP = 0.5;
   private static final double COMP_ANGLE_KI = 0;

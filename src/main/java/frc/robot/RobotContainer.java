@@ -126,6 +126,7 @@ public class RobotContainer {
         "brightAuto",
         () -> new BrightTryMakeAuto(s_Swerve, arm, m_driverController, m_angler, m_shooter, belt));
     autoChooser.add("tinyPath", () -> new FollowPathAuto(s_Swerve, "tinyPath"));
+    autoChooser.add("turner", () -> new FollowPathAuto(s_Swerve, "turner"));
     // Every .auto made in PathPlanner (deploy/pathplanner/autos/) shows up as "PP: <name>"
     for (String autoName : AutoBuilder.getAllAutoNames()) {
       autoChooser.add("PP: " + autoName, () -> new PathPlannerAuto(autoName));

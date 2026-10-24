@@ -22,6 +22,7 @@ import java.util.LinkedList;
 import org.wpilib.command2.SubsystemBase;
 import org.wpilib.driverstation.Alliance;
 import org.wpilib.driverstation.MatchState;
+import org.wpilib.driverstation.RobotState;
 import org.wpilib.driverstation.XboxController;
 import org.wpilib.framework.RobotBase;
 import org.wpilib.math.controller.ProfiledPIDController;
@@ -86,6 +87,13 @@ public class Swerve extends SubsystemBase {
   // AdvantageScope keeps using "Field 2d".
   private final TelemetryTable m_elasticField = m_driveTelemetry.getTable("Elastic Field");
 
+  // Heading logging for tuning the auto's angular PID (see driveRobotRelative)
+  private final TelemetryTable m_turnTelemetry = m_driveTelemetry.getTable("Turn Tuning");
+  private Pose2d lastTargetPose = new Pose2d();
+  private double pathStartTime;
+  private double lastLogTime;
+  private Rotation2d lastLogHeading = new Rotation2d();
+
   private double lastTurnUpdate;
   private double autoTurnHeading;
 
@@ -95,6 +103,11 @@ public class Swerve extends SubsystemBase {
   private double lastYawRateTimestamp = Timer.getTimestamp();
   // Limelight's recommended cutoff for trusting MegaTag2 while rotating.
   private static final double MAX_MT2_YAW_RATE_DEG_PER_SEC = 720.0;
+  // In auto, a vision pose this far from the current estimate means vision disagrees with where
+  // the auto put us (wrong placement or wrong start heading). Fusing it makes PathPlanner chase the
+  // jump and drive off in a straight line, so it's ignored. seedPose still handles the start.
+  private static final double MAX_AUTO_VISION_JUMP_METERS = 1.0;
+  private double lastVisionJumpPrintTime;
 
   private final int swerveAlignUpdateSecond = 20;
 
@@ -176,6 +189,23 @@ public class Swerve extends SubsystemBase {
         (poses) -> {
           field2d.getObject("path").setPoses(poses);
           m_elasticField.log("path", toElasticPoses(poses.toArray(new Pose2d[0])));
+          // Called with the path when it starts and an empty list when it ends
+          if (!poses.isEmpty()) {
+            pathStartTime = Timer.getTimestamp();
+            lastLogTime = pathStartTime;
+            lastLogHeading = getHeading();
+            System.out.println(
+                "TURNLOG,t,targetDeg,headingDeg,errorDeg,cmdOmegaDegPerSec,gyroOmegaDegPerSec,x,y");
+          } else {
+            System.out.println("TURNLOG,end");
+          }
+        });
+    // Where PathPlanner wants the robot to be right now, to compare against "Robot" when tuning
+    PathPlannerLogging.setLogTargetPoseCallback(
+        (pose) -> {
+          lastTargetPose = pose;
+          field2d.getObject("target").setPose(pose);
+          m_elasticField.log("target", toElasticPoses(pose));
         });
 
     // See https://pathplanner.dev/robot-config.html#bumper-config-options for setting RobotConfig
@@ -282,11 +312,46 @@ public class Swerve extends SubsystemBase {
    * @param robotRelativeSpeeds the speed in m/s
    */
   public void driveRobotRelative(ChassisVelocities robotRelativeSpeeds) {
-    System.out.println("relative");
+    logTurnTuning(robotRelativeSpeeds);
     ChassisVelocities targetSpeeds = robotRelativeSpeeds.discretize(0.02);
     SwerveModuleVelocity[] targetStates =
         SwerveConstants.kinematics().toSwerveModuleVelocities(targetSpeeds);
     setModuleStates(targetStates);
+  }
+
+  /**
+   * Logs heading vs. PathPlanner's target every loop while a path runs, to the log (Drive/Turn
+   * Tuning) and to the console as TURNLOG CSV lines, for tuning the angular PID.
+   */
+  private void logTurnTuning(ChassisVelocities commanded) {
+    double now = Timer.getTimestamp();
+    Rotation2d heading = getHeading();
+    double targetDeg = lastTargetPose.getRotation().getDegrees();
+    double headingDeg = heading.getDegrees();
+    double errorDeg = lastTargetPose.getRotation().minus(heading).getDegrees();
+    double cmdOmegaDeg = Math.toDegrees(commanded.omega);
+    double dt = now - lastLogTime;
+    double gyroOmegaDeg = dt > 0 ? heading.minus(lastLogHeading).getDegrees() / dt : 0;
+    lastLogTime = now;
+    lastLogHeading = heading;
+
+    m_turnTelemetry.log("target deg", targetDeg);
+    m_turnTelemetry.log("heading deg", headingDeg);
+    m_turnTelemetry.log("error deg", errorDeg);
+    m_turnTelemetry.log("commanded omega deg per s", cmdOmegaDeg);
+    m_turnTelemetry.log("gyro omega deg per s", gyroOmegaDeg);
+
+    Pose2d pose = getPose();
+    System.out.printf(
+        "TURNLOG,%.3f,%.2f,%.2f,%.2f,%.1f,%.1f,%.3f,%.3f%n",
+        now - pathStartTime,
+        targetDeg,
+        headingDeg,
+        errorDeg,
+        cmdOmegaDeg,
+        gyroOmegaDeg,
+        pose.getX(),
+        pose.getY());
   }
 
   /** Resets the odometer value */
@@ -548,6 +613,16 @@ public class Swerve extends SubsystemBase {
         Cameras.FRONT.readAcceptedPoseEstimates(PoseEstimateType.MT2_WPIBLUE)) {
       megatag2Pose.setRobotPose(estimate.pose);
       if (spinningTooFast) continue;
+      double jumpMeters = estimate.pose.getTranslation().getDistance(getPose().getTranslation());
+      if (RobotState.isAutonomous() && jumpMeters > MAX_AUTO_VISION_JUMP_METERS) {
+        if (timestamp - lastVisionJumpPrintTime > 1.0) {
+          lastVisionJumpPrintTime = timestamp;
+          System.out.printf(
+              "Ignored vision pose %.2f m away from current pose in auto (vision says x=%.2f y=%.2f)%n",
+              jumpMeters, estimate.pose.getX(), estimate.pose.getY());
+        }
+        continue;
+      }
       poseEstimator.addVisionMeasurement(
           estimate.pose, estimate.timestampSeconds, estimate.stdDevs);
     }

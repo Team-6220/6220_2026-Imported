@@ -32,8 +32,11 @@ public class AlignAndMove extends Command {
     s_Swerve.resetModulesToAbsolute();
     Cameras.setPipelineForVisibleTag();
     s_Swerve.resetTurnController();
+    // TX is positive when the tag is to the right, and turning right lowers the heading (CCW is
+    // positive), so the goal is heading - TX. It used to be + TX, which only worked while the
+    // drivetrain's rotation was reversed.
     s_Swerve.setTurnControllerGoal(
-        Degree.of(Cameras.FRONT.getTXDegrees() + s_Swerve.getHeadingDegrees()));
+        Degree.of(s_Swerve.getHeadingDegrees() - Cameras.FRONT.getTXDegrees()));
   }
 
   @Override
@@ -46,7 +49,7 @@ public class AlignAndMove extends Command {
       Cameras.setPipelineForVisibleTag();
     }
     s_Swerve.setTurnControllerGoal(
-        Degree.of(Cameras.FRONT.getTXDegrees() + s_Swerve.getHeadingDegrees()));
+        Degree.of(s_Swerve.getHeadingDegrees() - Cameras.FRONT.getTXDegrees()));
     /* Get Values, Deadband*/
     double[] driverInputs = IOConstants.getDriverInputs(driver.getController());
     /* Drive */

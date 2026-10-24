@@ -22,7 +22,7 @@ public final class AutoConstants {
   public static final double translation_kI = 0.05;
   public static final double translation_kD = 0;
   public static final double angular_kP =
-      2.0; // Used to be 6 but that was never used in autobuilder(and maybe way too high)
+      5.0; // Used to be 6 but that was never used in autobuilder(and maybe way too high)
   public static final double angular_kI = 0;
   public static final double angular_kIzone = 0.05;
   public static final double angular_kD = 0.02;
