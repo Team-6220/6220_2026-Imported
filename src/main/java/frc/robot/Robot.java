@@ -191,7 +191,7 @@ public class Robot extends TimedRobot {
     // Initialize shift tracking
     // Match starts at 2:20 (140s). AUTO 0:20-0:00, TRANSITION 2:20-2:10, SHIFT 1-4, ENDGAME
     // 0:30-0:00
-    teleOpStartTime = Timer.getTimestamp() + 1;
+    teleOpStartTime = Timer.getTimestamp();
     currentShift = 0;
     shiftName = "TRANSITION";
   }
@@ -221,7 +221,7 @@ public class Robot extends TimedRobot {
 
     // Use a strict elapsed timer for shift calculation to bypass FMS disabled gaps
     // Teleop is 140 seconds (2:20) in this structure.
-    double elapsedTeleop = Timer.getTimestamp() - teleOpStartTime - 1;
+    double elapsedTeleop = Timer.getTimestamp() - teleOpStartTime;
     double calculatedMatchTime = 140.0 - elapsedTeleop;
 
     if (matchTime < 0.0 && !RobotState.isFMSAttached()) {
