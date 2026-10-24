@@ -22,7 +22,6 @@ import java.util.LinkedList;
 import org.wpilib.command2.SubsystemBase;
 import org.wpilib.driverstation.Alliance;
 import org.wpilib.driverstation.MatchState;
-import org.wpilib.driverstation.RobotState;
 import org.wpilib.driverstation.XboxController;
 import org.wpilib.framework.RobotBase;
 import org.wpilib.math.controller.ProfiledPIDController;
@@ -103,11 +102,6 @@ public class Swerve extends SubsystemBase {
   private double lastYawRateTimestamp = Timer.getTimestamp();
   // Limelight's recommended cutoff for trusting MegaTag2 while rotating.
   private static final double MAX_MT2_YAW_RATE_DEG_PER_SEC = 720.0;
-  // In auto, a vision pose this far from the current estimate means vision disagrees with where
-  // the auto put us (wrong placement or wrong start heading). Fusing it makes PathPlanner chase the
-  // jump and drive off in a straight line, so it's ignored. seedPose still handles the start.
-  private static final double MAX_AUTO_VISION_JUMP_METERS = 1.0;
-  private double lastVisionJumpPrintTime;
 
   private final int swerveAlignUpdateSecond = 20;
 
@@ -613,16 +607,6 @@ public class Swerve extends SubsystemBase {
         Cameras.FRONT.readAcceptedPoseEstimates(PoseEstimateType.MT2_WPIBLUE)) {
       megatag2Pose.setRobotPose(estimate.pose);
       if (spinningTooFast) continue;
-      double jumpMeters = estimate.pose.getTranslation().getDistance(getPose().getTranslation());
-      if (RobotState.isAutonomous() && jumpMeters > MAX_AUTO_VISION_JUMP_METERS) {
-        if (timestamp - lastVisionJumpPrintTime > 1.0) {
-          lastVisionJumpPrintTime = timestamp;
-          System.out.printf(
-              "Ignored vision pose %.2f m away from current pose in auto (vision says x=%.2f y=%.2f)%n",
-              jumpMeters, estimate.pose.getX(), estimate.pose.getY());
-        }
-        continue;
-      }
       poseEstimator.addVisionMeasurement(
           estimate.pose, estimate.timestampSeconds, estimate.stdDevs);
     }
