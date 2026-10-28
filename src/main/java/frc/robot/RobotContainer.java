@@ -185,8 +185,8 @@ public class RobotContainer {
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
     Trigger angleUp = new Trigger(() -> m_joystick.getRawButton(10));
     Trigger angleDown = new Trigger(() -> m_joystick.getRawButton(11));
-    Trigger passMid = m_driverController.rightBumper();
-    Trigger passFar = m_driverController.b();
+    Trigger passAuto = m_driverController.b();
+    Trigger passFar = m_driverController.rightBumper();
     Trigger resetEncoder = new Trigger(() -> m_joystick.getRawButton(6));
     Trigger manualArm = new Trigger(() -> m_joystick.getRawButton(4));
     Trigger joystickIntake = new Trigger(() -> m_joystick.getRawButton(0));
@@ -225,15 +225,17 @@ public class RobotContainer {
 
     // m_driverController.x().whileTrue(new ShooterTESTER(m_shooter, belt));
 
-    if (ShooterConstants.AUTO_SHUTTLE_ENABLED) {
-      // RB and B both aim at the shuttle target and pick RPM/angle by pose distance
-      passMid.whileTrue(autoShuttle());
-      passFar.whileTrue(autoShuttle());
-    } else {
-      passMid.whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, 2200, 1200, 32, -0.5));
+    passAuto.whileTrue(autoShuttle());
+    passFar.whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, 3100, 1200, 32, -0.5));
 
-      passFar.whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, 3100, 1200, 32, -0.5));
-    }
+    //if (ShooterConstants.AUTO_SHUTTLE_ENABLED) {
+    //  passMid.whileTrue(autoShuttle());
+    //  passFar.whileTrue(autoShuttle());
+    //} else {
+    //  passMid.whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, 2200, 1200, 32, -0.5));
+    //
+    //  passFar.whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, 3100, 1200, 32, -0.5));
+    //}
 
     m_driverController.x().whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, -2000, -2400, 0, 0.5));
 

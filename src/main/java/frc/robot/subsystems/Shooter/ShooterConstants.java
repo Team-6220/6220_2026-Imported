@@ -16,7 +16,7 @@ public class ShooterConstants {
   public static HashMap<Double, Double[]> rpmAngle =
       new HashMap<Double, Double[]>() {
         {
-          put(-1.0, new Double[] {100.0, 0.0, 0.0}); // Testing purposes
+          //put(-1.0, new Double[] {100.0, 0.0, 0.0}); // Testing purposes
           put(0.0, new Double[] {1900.0, 0.0, 1.15}); // Testing purposes
           put(0.4, new Double[] {1900.0, 0.0, 1.15});
           put(0.6, new Double[] {1900.0, 0.0, 1.15});
@@ -48,7 +48,7 @@ public class ShooterConstants {
           put(5.4, new Double[] {2340.0, 29.5, 1.37});
           put(5.6, new Double[] {2360.0, 30.5, 1.38});
           put(5.8, new Double[] {2380.0, 31.5, 1.39});
-          put(6.0, new Double[] {2400.0, 32.5, 1.40});
+          put(6.0, new Double[] {2500.0, 32.0, 1.40});
         }
       };
 
@@ -57,7 +57,7 @@ public class ShooterConstants {
   public static HashMap<Double, Double[]> shuttleRpmAngle =
       new HashMap<Double, Double[]>() {
         {
-          put(-1.0, new Double[] {100.0, 0.0, 0.0}); // Testing purposes
+          //put(-1.0, new Double[] {100.0, 0.0, 0.0}); // Testing purposes
           put(0.0, new Double[] {1900.0, 0.0, 1.15}); // Testing purposes
           put(0.4, new Double[] {1900.0, 0.0, 1.15});
           put(0.6, new Double[] {1900.0, 0.0, 1.15});
@@ -89,7 +89,8 @@ public class ShooterConstants {
           put(5.4, new Double[] {2340.0, 29.5, 1.37});
           put(5.6, new Double[] {2360.0, 30.5, 1.38});
           put(5.8, new Double[] {2380.0, 31.5, 1.39});
-          put(6.0, new Double[] {2400.0, 32.5, 1.40});
+          put(6.0, new Double[] {2500.0, 32.0, 1.40});
+          //put(6.0, new Double[] {3100.0, 32.0, 1.40}); uncomment if you want shooting from beyond 6 m to shoot really far
         }
       };
 
@@ -98,7 +99,7 @@ public class ShooterConstants {
    * When true, RB and B aim the robot at the shuttle target and pick RPM/angle from {@link
    * #shuttleRpmAngle} by pose distance. When false, they fire PassToAlliance's fixed RPM/angle.
    */
-  public static final boolean AUTO_SHUTTLE_ENABLED = true;
+  public static final boolean AUTO_SHUTTLE_ENABLED = true; // currently does nothing. Uncomment the code that uses it in robotContainer to use
 
   /**
    * When true, shots blend between the two nearest table entries instead of rounding the distance
