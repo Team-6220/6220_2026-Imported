@@ -33,29 +33,32 @@ Testing checklist for the pose-based shooting changes (see `SHOOTING-USING-POSE-
 
 ## 1. Pose accuracy and aiming (do this before any shots)
 
-- [ ] **Limelight settings left over from the old system.** The old aiming used per-tag pipelines (1–6) with 3D offsets pointing at the hub center. Nothing needs those now. Check they can't throw the pose off:
-  - [ ] In the Limelight web UI, check pipeline 0 (the one the code uses now): 3D offset / Point of Interest is zero, "Use Map POI Offsets" is off, and there's no tag ID filter hiding hub or field tags.
-  - [ ] Check the field map is the stock 2026 map (welded or AndyMark, matching your field), not an old custom one with moved tags.
-  - [ ] Check the camera pose in the UI matches `Cameras.java` (0.014 m forward, 0 left, 0.516 m up, pitch −55°). The code sends these, but a mismatch in the UI is worth catching.
-  - [ ] Delete or ignore pipelines 1–6; the code no longer switches to them.
-  - [ ] **Pose check:** place the robot at 3 tape-measured spots and compare `Drive/megatag2` and the MegaTag1 pose against the real position. They should agree within a few cm and 1–2°. A consistent offset (always shifted the same way) suggests a leftover offset, wrong field map or wrong camera pose.
+- [x] **Limelight settings left over from the old system.** The old aiming used per-tag pipelines (1–6) with 3D offsets pointing at the hub center. Nothing needs those now. Check they can't throw the pose off:
+  - [x] In the Limelight web UI, check pipeline 0 (the one the code uses now): 3D offset / Point of Interest is zero, "Use Map POI Offsets" is off, and there's no tag ID filter hiding hub or field tags.
+  - [x] Check the field map is the stock 2026 map (welded or AndyMark, matching your field), not an old custom one with moved tags.
+  - [x] Check the camera pose in the UI matches `Cameras.java` (0.014 m forward, 0 left, 0.516 m up, pitch −55°). The code sends these, but a mismatch in the UI is worth catching.
+  - [x] Delete or ignore pipelines 1–6; the code no longer switches to them.
+  - [x] **Pose check:** place the robot at 3 tape-measured spots and compare `Drive/megatag2` and the MegaTag1 pose against the real position. They should agree within a few cm and 1–2°. A consistent offset (always shifted the same way) suggests a leftover offset, wrong field map or wrong camera pose.
   - Per the Limelight docs, the 3D offset / POI only moves `tx`/`ty` (aiming) and `tdist`, not MegaTag localization. So this is most likely fine, and the firmware update probably wiped the old offsets anyway. It's still worth confirming, because a bad pose now breaks both aim and distance.
-- [ ] Power on, press Y facing away from your driver station, and drive near the hub. Once tags are seen, the pose on Field2d matches where the robot really is.
+- [x] Power on, press Y facing away from your driver station, and drive near the hub. Once tags are seen, the pose on Field2d matches where the robot really is.
 - [ ] **Teleop without auto:** enable teleop straight away (no auto run). The pose starts at (0, 0) until MegaTag2 sees tags. Confirm it snaps to the right place once tags are in view, and note how long that takes. Shooting before then uses a wrong distance.
 - [ ] **Distance check:** tape-measure robot-center to hub-center at 1.5, 2.5 and 3.5 m. `Shooter/RawHubDistance` should be within about 5 cm, and `ForwardDistance` should show the matching key.
 
 | Measured (m) | `RawHubDistance` (m) | `ForwardDistance` | Difference |
 | --- | --- | --- | --- |
-| 1.5 | | | |
-| 2.5 | | | |
-| 3.5 | | | |
+| 1.6 | 1.61| 1.6| fine|
+| 2.6 | 2.6| 2.6| fine|
+| 3.6 | 3.6| 3.6| fine|
 
-- [ ] **Aim check:** hold LT from at least 4 positions around the hub. The robot points at the hub center (not a tag face), `Shooter/HubHeadingErrorDeg` settles within ±2°, `Shooter/Aligned` turns true, the LEDs go green, and rumble fires.
-- [ ] **Both alliances:** repeat the aim check on red. Include a start facing directly away from the hub, so the turn crosses ±180°. The robot turns the short way and doesn't spin a full circle.
-- [ ] Hold LT with the sticks idle: once aligned, the wheels lock (X pattern) and stay locked with no twitching.
-- [ ] Hold LT while driving: the robot keeps turning toward the hub while it translates, with no fighting or stuttering in the modules.
-- [ ] **Camera blocked:** cover the Limelight, drive a short loop, hold LT. It still aims at the hub, using odometry only.
-- [ ] Odometry drift: with the camera covered, drive for 10, 20 and 30 s, then uncover it and see how far the pose jumps. That jump is how far off aim and distance were.
+- [x] **Aim check:** hold LT from at least 4 positions around the hub. The robot points at the hub center (not a tag face), `Shooter/HubHeadingErrorDeg` settles within ±2°, `Shooter/Aligned` turns true, the LEDs go green, and rumble fires.
+
+
+-Heading[Error is not working 
+- x]] ] **Both alliances:** repeat the aim check on red. Include a start facing directly away from the hub, so the turn crosses ±180°. The robot turns the short way and doesn't spin a full circle.
+x [ ] Hold LT with the sticks idle: once aligned, the wheels lock (X pattern) and stay locked with no twitching.
+x [ ] Hold LT while driving: the robot keeps turning toward the hub while it translates, with no fighting or stuttering in the modules.
+x [ ] **Camera blocked:** cover the Limelight, drive a short loop, hold LT. It still aims at the hub, using odometry only.
+x [ ] Odometry drift: with the camera covered, drive for 10, 20 and 30 s, then uncover it and see how far the pose jumps. That jump is how far off aim and distance were.
 
 ## 2. Shooting from the table's recorded points
 
@@ -83,10 +86,10 @@ Goal: confirm the 2026 table carries over unchanged. Shoot from the table's own 
 
 ## 3. First-shot boost and jitter
 
-- [ ] Hold LT, then RT: the first ball gets the boost (RPM above target), then the RPM drops to normal after the dip.
-- [ ] **Boost once per press:** while still holding LT, drive slowly across a key boundary (e.g. 2.3 → 2.5 m). RPM and angle change to the new key, but there's **no** second boost.
-- [ ] Release LT, press again: the boost happens again.
-- [ ] Passes (RB mid, B far): every press gets one boost, including pressing the same pass twice in a row.
+x [ ] Hold LT, then RT: the first ball gets the boost (RPM above target), then the RPM drops to normal after the dip.
+x [ ] **Boost once per press:** while still holding LT, drive slowly across a key boundary (e.g. 2.3 → 2.5 m). RPM and angle change to the new key, but there's **no** second boost.
+x [ ] Release LT, press again: the boost happens again.
+x [ ] Passes (RB mid, B far): every press gets one boost, including pressing the same pass twice in a row.
 - [ ] **Jitter:** park on a key boundary (e.g. `RawHubDistance` ≈ 2.30 m) and hold LT. If `ForwardDistance` flickers between keys and the flywheel or hood hunts, the per-loop lookup is the cause. **First fix:** move the lookup in `HashShoot.execute()` back into `initialize()`. Interpolation (section 5) is the longer-term fix.
 
 ## 4. Heading-slip warning (gyro off by more than 3°)
@@ -185,7 +188,7 @@ Not implemented yet. The idea is for passes to aim at a point beside the hub. Th
 
 ## Later (not to do yet)
 
-- [ ] Add `Vision/HeadingSlipWarning` to the Elastic layout (`deploy/Elastic-6220.json`). There's a TODO in `RobotContainer.publishDriverDashboardBooleans()`.
+- [x] Add `Vision/HeadingSlipWarning` to the Elastic layout (`deploy/Elastic-6220.json`). There's a TODO in `RobotContainer.publishDriverDashboardBooleans()`.
 - [ ] Shuttling auto-aim to a point beside the hub (use section 7's results to pick the point and side).
 - [ ] Interpolation (after section 5 passes).
 - [ ] Shoot on the move: aim ahead by robot velocity × ball flight time.

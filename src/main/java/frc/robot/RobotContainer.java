@@ -200,6 +200,12 @@ public class RobotContainer {
 
     // armUpAndDown.whileTrue(new ArmUpAndDown(arm));
 
+    // DEBUG:
+    m_driverController.dpadUp().onTrue(new ArmToPositionCommand(arm, ARM_DOWN));
+    m_driverController.dpadDown().onTrue(new ArmToPositionCommand(arm, ARM_UP));
+    m_driverController.dpadRight().whileTrue(new TestRollerCommand(false));
+    m_driverController.dpadLeft().onTrue(Commands.runOnce(() -> arm.resetEncoder()));
+
     m_driverController
         .y()
         .onTrue(new InstantCommand(() -> s_Swerve.zeroHeading(m_driverController.getController())));
@@ -251,7 +257,7 @@ public class RobotContainer {
         new Trigger(() -> HubTargeting.isAligned(s_Swerve.getPose(), ALIGN_TOLERANCE_DEG));
 
     // MegaTag1 heading disagrees with the pose heading. Debounced so one noisy frame doesn't flash.
-    Trigger headingSlip = new Trigger(s_Swerve::isHeadingSlipping).debounce(0.25);
+    Trigger headingSlip = new Trigger(s_Swerve::isHeadingSlipping).debounce(0.5);
 
     Trigger inRange =
         new Trigger(
@@ -294,13 +300,11 @@ public class RobotContainer {
         .whileTrue(s_LED.runPattern(s_LED.solidGreen()));
 
     // Actively shooting AND aligned -> Flashing Red
-    isShooting
-        .and(aligned)
-        .and(headingSlip.negate())
-        .whileTrue(s_LED.runPattern(s_LED.blink(s_LED.solidRed(), 0.15)));
+    //isShooting.and(aligned).and(headingSlip.negate()).whileTrue(s_LED.runPattern(s_LED.blink(s_LED.solidRed(), 0.15)));
 
-    // Heading slip (MegaTag1 disagrees with pose heading) -> Flashing Pink. Highest priority.
-    headingSlip.whileTrue(s_LED.runPattern(s_LED.blink(s_LED.solidPink(), 0.15)));
+    // Heading slip (MegaTag1 disagrees with pose heading) -> Flashing Blue. Highest priority.
+    headingSlip
+        .whileTrue(s_LED.runPattern(s_LED.blink(s_LED.solidBlue(), 0.15)));
 
     // Haptic feedback (rumble): Pulse when target is aligned + in range (before full spin-up).
     readyToShoot.onTrue(

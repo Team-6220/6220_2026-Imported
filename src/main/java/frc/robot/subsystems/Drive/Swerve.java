@@ -98,7 +98,7 @@ public class Swerve extends SubsystemBase {
   private static final double MAX_MT2_YAW_RATE_DEG_PER_SEC = 720.0;
 
   /** Pose heading vs MegaTag1 heading difference that raises the heading-slip warning. */
-  public static final double HEADING_SLIP_WARNING_DEG = 3.0;
+  public static final double HEADING_SLIP_WARNING_DEG = 8.0;
 
   // MegaTag2 never corrects heading, so MegaTag1 (no gyro) is used as an independent check.
   private boolean headingSlipping = false;

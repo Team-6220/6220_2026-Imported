@@ -62,9 +62,8 @@ public class AdressableLEDs extends SubsystemBase {
     return LEDPattern.solid(new Color(0.0, 0.0, 0.0));
   }
 
-  public LEDPattern solidPink() {
-    // rgb(255, 105, 180)
-    return LEDPattern.solid(new Color(255.0 / 255.0, 105.0 / 255.0, 180.0 / 255.0));
+  public LEDPattern solidBlue() {
+    return LEDPattern.solid(new Color(224.0 / 255.0, 145.0 / 255.0, 255.0 / 255.0));
   }
 
   public LEDPattern solidGold() {
