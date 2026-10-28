@@ -72,7 +72,7 @@ public class BrightTryMakeAuto extends SequentialCommandGroup{
   for (Pose2d waypoint : SHOOTWAYPOINTS) {
       addCommands(new DriveToPose(swerve, waypoint).withTimeout(WAYPOINT_TIMEOUT_SECONDS));
     };
-    addCommands(new AlignAndMove(swerve, this.controller, this.controller.rightBumper()).withTimeout(2),
+    addCommands(new AlignAndMove(swerve, this.controller, this.controller.leftBumper()).withTimeout(2),
         new HashShootAuto(angler, shooter, belt).withTimeout(4));
 
 

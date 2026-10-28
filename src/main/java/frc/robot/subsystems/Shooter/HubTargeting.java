@@ -38,23 +38,58 @@ public final class HubTargeting {
   }
 
   /**
+   * Shuttle target: on the trench/bump boundary line on the robot's side of the field (by y),
+   * inside our alliance zone. Passes aimed here land on our side without hitting the hub.
+   */
+  public static Translation2d getShuttleTarget(Pose2d robotPose) {
+    boolean red = Constants.isRed.equals("red");
+    double x =
+        red
+            ? ShooterConstants.FIELD_LENGTH_M - ShooterConstants.SHUTTLE_TARGET_X_FROM_WALL_M
+            : ShooterConstants.SHUTTLE_TARGET_X_FROM_WALL_M;
+    double centerY = BLUE_HUB_CENTER.getY();
+    double y =
+        robotPose.getY() >= centerY
+            ? centerY + ShooterConstants.SHUTTLE_TARGET_Y_OFFSET_M
+            : centerY - ShooterConstants.SHUTTLE_TARGET_Y_OFFSET_M;
+    return new Translation2d(x, y);
+  }
+
+  /** Floor-plane (XY) distance from the robot's center to the shuttle target. */
+  public static double getShuttleDistanceMeters(Pose2d robotPose) {
+    return robotPose.getTranslation().getDistance(getShuttleTarget(robotPose));
+  }
+
+  /**
    * Field heading that points the robot's front (shooter side) at the hub center. Keeps the current
    * heading if the robot is exactly on the hub center, where no direction exists.
    */
   public static Rotation2d getAimHeading(Pose2d robotPose) {
-    return getHubCenter()
-        .minus(robotPose.getTranslation())
-        .getAngle()
-        .orElse(robotPose.getRotation());
+    return getAimHeading(robotPose, getHubCenter());
+  }
+
+  /** Field heading that points the robot's front at the given field point. */
+  public static Rotation2d getAimHeading(Pose2d robotPose, Translation2d target) {
+    return target.minus(robotPose.getTranslation()).getAngle().orElse(robotPose.getRotation());
   }
 
   /** Aim heading minus the robot's heading, wrapped to -180 to 180 degrees. */
   public static double getHeadingErrorDegrees(Pose2d robotPose) {
-    return getAimHeading(robotPose).minus(robotPose.getRotation()).getDegrees();
+    return getHeadingErrorDegrees(robotPose, getHubCenter());
+  }
+
+  /** Heading error to the given field point, wrapped to -180 to 180 degrees. */
+  public static double getHeadingErrorDegrees(Pose2d robotPose, Translation2d target) {
+    return getAimHeading(robotPose, target).minus(robotPose.getRotation()).getDegrees();
   }
 
   /** Whether the robot is facing the hub center within the given tolerance. */
   public static boolean isAligned(Pose2d robotPose, double toleranceDeg) {
-    return Math.abs(getHeadingErrorDegrees(robotPose)) <= toleranceDeg;
+    return isAligned(robotPose, getHubCenter(), toleranceDeg);
+  }
+
+  /** Whether the robot is facing the given field point within the given tolerance. */
+  public static boolean isAligned(Pose2d robotPose, Translation2d target, double toleranceDeg) {
+    return Math.abs(getHeadingErrorDegrees(robotPose, target)) <= toleranceDeg;
   }
 }

@@ -32,7 +32,7 @@ public class AlignAndFlywheels extends ParallelCommandGroup {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-        new AlignAndMove(s_swerve, controller, controller.rightBumper()),
+        new AlignAndMove(s_swerve, controller, controller.leftBumper()),
         new HashShoot(m_angler, m_shooter, m_belt, controller));
   }
 }

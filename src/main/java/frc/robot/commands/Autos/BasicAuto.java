@@ -56,7 +56,7 @@ public class BasicAuto extends SequentialCommandGroup {
             .withTimeout(1.2),
         new RunCommand(() -> s_swerve.drive(new Translation2d(0, 0), 0, true, false))
             .withTimeout(0.2),
-        new AlignAndMove(s_swerve, controller, controller.rightBumper()).withTimeout(2),
+        new AlignAndMove(s_swerve, controller, controller.leftBumper()).withTimeout(2),
         new HashShootAuto(m_angler, m_shooter, m_belt).withTimeout(4),
         new PrintCommand("done"));
     }
@@ -71,7 +71,7 @@ public class BasicAuto extends SequentialCommandGroup {
                 .withTimeout(1.2),
             new RunCommand(() -> s_swerve.drive(new Translation2d(0, 0), 0, true, false))
                 .withTimeout(0.2),
-            new AlignAndMove(s_swerve, controller, controller.rightBumper()).withTimeout(2),
+            new AlignAndMove(s_swerve, controller, controller.leftBumper()).withTimeout(2),
             new HashShootAuto(m_angler, m_shooter, m_belt).withTimeout(6),
             new PrintCommand("done"));
     }

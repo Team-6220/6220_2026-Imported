@@ -6,14 +6,16 @@ import frc.robot.IOConstants;
 import frc.robot.subsystems.Drive.Swerve;
 import frc.robot.subsystems.Shooter.HubTargeting;
 import java.util.function.BooleanSupplier;
+import java.util.function.Function;
 import org.wpilib.command2.Command;
 import org.wpilib.command2.button.CommandXboxController;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Translation2d;
 
 /**
- * Turns the robot to face our hub's center using the swerve pose (odometry + MegaTag2) while the
- * driver keeps control of translation. Works with no tag in view.
+ * Turns the robot to face our hub's center (or another field point, such as the shuttle target)
+ * using the swerve pose (odometry + MegaTag2) while the driver keeps control of translation. Works
+ * with no tag in view.
  */
 public class AlignAndMove extends Command {
   /** Heading error to the hub center that counts as aligned. Also used by RobotContainer. */
@@ -23,13 +25,25 @@ public class AlignAndMove extends Command {
   private Swerve s_Swerve;
   private BooleanSupplier robotCentricSup;
   private CommandXboxController driver;
+  private Function<Pose2d, Translation2d> targetSup;
 
+  /** Aims at our hub's center. */
   public AlignAndMove(
       Swerve s_Swerve, CommandXboxController driver, BooleanSupplier robotCentricSup) {
+    this(s_Swerve, driver, robotCentricSup, pose -> HubTargeting.getHubCenter());
+  }
+
+  /** Aims at the field point that {@code targetSup} returns for the robot's current pose. */
+  public AlignAndMove(
+      Swerve s_Swerve,
+      CommandXboxController driver,
+      BooleanSupplier robotCentricSup,
+      Function<Pose2d, Translation2d> targetSup) {
     this.s_Swerve = s_Swerve;
     addRequirements(s_Swerve);
     this.driver = driver;
     this.robotCentricSup = robotCentricSup;
+    this.targetSup = targetSup;
   }
 
   @Override
@@ -44,7 +58,7 @@ public class AlignAndMove extends Command {
   public void execute() {
     Pose2d pose = s_Swerve.getPose();
     setAimGoal(pose);
-    boolean aligned = HubTargeting.isAligned(pose, ALIGN_TOLERANCE_DEG);
+    boolean aligned = HubTargeting.isAligned(pose, targetSup.apply(pose), ALIGN_TOLERANCE_DEG);
 
     /* Get Values, Deadband*/
     double[] driverInputs = IOConstants.getDriverInputs(driver.getController());
@@ -65,9 +79,10 @@ public class AlignAndMove extends Command {
     }
   }
 
-  /** Points the turn controller at the hub center from the given pose. */
+  /** Points the turn controller at the target from the given pose. */
   private void setAimGoal(Pose2d pose) {
-    s_Swerve.setTurnControllerGoal(Radians.of(HubTargeting.getAimHeading(pose).getRadians()));
+    s_Swerve.setTurnControllerGoal(
+        Radians.of(HubTargeting.getAimHeading(pose, targetSup.apply(pose)).getRadians()));
   }
 
   @Override

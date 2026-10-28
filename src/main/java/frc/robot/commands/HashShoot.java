@@ -6,7 +6,6 @@ package frc.robot.commands;
 
 import frc.robot.subsystems.Intake.BeltSubsystem;
 import frc.robot.subsystems.Shooter.AnglerSubsystem;
-import frc.robot.subsystems.Shooter.ShooterConstants;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import org.wpilib.command2.Command;
 import org.wpilib.command2.button.CommandXboxController;
@@ -23,7 +22,6 @@ public class HashShoot extends Command {
   CommandXboxController controller;
   double degrees;
   double rpm;
-  double dist;
 
   public HashShoot(
       AnglerSubsystem m_angler,
@@ -48,27 +46,14 @@ public class HashShoot extends Command {
   @Override
   public void execute() {
     // Looked up every loop so RPM and angle follow the pose while the driver moves.
-    // If shooting is jittery (setpoints jumping as the distance crosses 0.2 m table keys), move
-    // this lookup back into initialize() first so each LT press locks in one distance.
-    try {
-      dist = m_shoot.getDist();
-      rpm = ShooterConstants.rpmAngle.get(dist)[0];
-      degrees = ShooterConstants.rpmAngle.get(dist)[1];
-    } catch (Exception e) {
-      System.out.println("Error occurred while looking up the HashShoot table.");
-      rpm = ShooterConstants.rpmAngle.get(0.0)[0];
-      degrees = ShooterConstants.rpmAngle.get(0.0)[1];
-    }
-
-    // Interpolation (see ShooterConstants): replaces the try/catch above. get() never returns
-    // null, and RPM/angle change smoothly instead of jumping at each 0.2 m key.
-    //
-    // double meters = m_shoot.getRawDist();
-    // rpm = ShooterConstants.RPM.get(meters);
-    // degrees = ShooterConstants.ANGLE.get(meters);
+    // If shooting is jittery (setpoints jumping as the distance crosses 0.2 m table keys), turn on
+    // ShooterConstants.INTERPOLATION_ENABLED, or move this lookup back into initialize().
+    double[] shot = m_shoot.getShot(false);
+    rpm = shot[0];
+    degrees = shot[1];
 
     m_angler.setAngle(degrees);
-    m_shoot.runAtTargetVelocity(rpm, controller, 1200);
+    m_shoot.runAtTargetVelocity(rpm, controller, 1200, shot[2]);
     m_belt.simpleDrive(-0.5);
     
   }

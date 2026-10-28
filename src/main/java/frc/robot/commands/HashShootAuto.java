@@ -6,7 +6,6 @@ package frc.robot.commands;
 
 import frc.robot.subsystems.Intake.BeltSubsystem;
 import frc.robot.subsystems.Shooter.AnglerSubsystem;
-import frc.robot.subsystems.Shooter.ShooterConstants;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import org.wpilib.command2.Command;
 
@@ -20,7 +19,6 @@ public class HashShootAuto extends Command {
   BeltSubsystem m_belt;
   double degrees;
   double rpm;
-  double dist;
 
   public HashShootAuto(AnglerSubsystem m_angler, ShooterSubsystem m_shoot, BeltSubsystem m_belt) {
     this.m_angler = m_angler;
@@ -32,15 +30,9 @@ public class HashShootAuto extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    try {
-      dist = m_shoot.getDist();
-      rpm = ShooterConstants.rpmAngle.get(dist)[0];
-      degrees = ShooterConstants.rpmAngle.get(dist)[1];
-    } catch (Exception e) {
-      System.out.println("Error occurred while initializing HashShoot command.");
-      rpm = ShooterConstants.rpmAngle.get(0.0)[0];
-      degrees = ShooterConstants.rpmAngle.get(0.0)[1];
-    }
+    double[] shot = m_shoot.getShot(false);
+    rpm = shot[0];
+    degrees = shot[1];
     // Reset shooter state for new shot sequence (enables first shot boost)
     m_shoot.resetShootingState();
   }

@@ -30,6 +30,7 @@ import org.wpilib.command2.button.CommandXboxController;
 import org.wpilib.command2.button.Trigger;
 import frc.robot.commands.AlignAndFlywheels;
 import frc.robot.commands.AlignAndMove;
+import frc.robot.commands.AutoShuttle;
 import frc.robot.commands.HashShootAuto;
 import frc.robot.commands.Autos.FollowPathAuto;
 import frc.robot.commands.SeedPoseFromVision;
@@ -49,6 +50,7 @@ import frc.robot.subsystems.Intake.RollerSubsystem;
 import frc.robot.subsystems.LEDs.AdressableLEDs;
 import frc.robot.subsystems.Shooter.AnglerSubsystem;
 import frc.robot.subsystems.Shooter.HubTargeting;
+import frc.robot.subsystems.Shooter.ShooterConstants;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.robot.subsystems.Vision.Cameras;
 import org.wpilib.driverstation.DriverStation;
@@ -157,7 +159,7 @@ public class RobotContainer {
     NamedCommands.registerCommand("shoot", new HashShootAuto(m_angler, m_shooter, belt));
     NamedCommands.registerCommand(
         "align",
-        new AlignAndMove(s_Swerve, m_driverController, m_driverController.rightBumper())
+        new AlignAndMove(s_Swerve, m_driverController, m_driverController.leftBumper())
             .withTimeout(2));
     // Possible issue (unconfirmed): AlignAndMove.end() switches the Limelight back to pipeline 0,
     // and HashShootAuto reads getDist() once in initialize() right after. If no frame from the new
@@ -165,7 +167,7 @@ public class RobotContainer {
     // table entry. Log getDist() at shoot start to check.
     NamedCommands.registerCommand(
         "alignAndShoot",
-        new AlignAndMove(s_Swerve, m_driverController, m_driverController.rightBumper())
+        new AlignAndMove(s_Swerve, m_driverController, m_driverController.leftBumper())
             .withTimeout(2)
             .andThen(new HashShootAuto(m_angler, m_shooter, belt).withTimeout(4)));
   }
@@ -223,9 +225,15 @@ public class RobotContainer {
 
     // m_driverController.x().whileTrue(new ShooterTESTER(m_shooter, belt));
 
-    passMid.whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, 2200, 1200, 32, -0.5));
+    if (ShooterConstants.AUTO_SHUTTLE_ENABLED) {
+      // RB and B both aim at the shuttle target and pick RPM/angle by pose distance
+      passMid.whileTrue(autoShuttle());
+      passFar.whileTrue(autoShuttle());
+    } else {
+      passMid.whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, 2200, 1200, 32, -0.5));
 
-    passFar.whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, 3100, 1200, 32, -0.5));
+      passFar.whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, 3100, 1200, 32, -0.5));
+    }
 
     m_driverController.x().whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, -2000, -2400, 0, 0.5));
 
@@ -320,6 +328,16 @@ public class RobotContainer {
                       m_driverController.getHID().setRumble(GenericHID.RumbleType.RIGHT_RUMBLE, 0.0);
                       m_driverController.getHID().setRumble(GenericHID.RumbleType.LEFT_RUMBLE, 0.0);
                     })));
+  }
+
+  /** Aims at the shuttle target on our side of the field and spins up for the pass. */
+  private Command autoShuttle() {
+    return new AlignAndMove(
+            s_Swerve,
+            m_driverController,
+            m_driverController.leftBumper(),
+            HubTargeting::getShuttleTarget)
+        .alongWith(new AutoShuttle(m_angler, m_shooter, belt, m_driverController));
   }
 
   /** Publish shooter booleans needed by Elastic dashboard widgets. */

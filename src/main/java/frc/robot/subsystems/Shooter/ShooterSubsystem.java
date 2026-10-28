@@ -19,6 +19,8 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import frc.lib.util.TunableHelper;
 import frc.robot.subsystems.Vision.Cameras;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.function.Supplier;
 import org.wpilib.command2.Command;
 import org.wpilib.command2.SubsystemBase;
@@ -106,9 +108,8 @@ public class ShooterSubsystem extends SubsystemBase {
   // Robot field pose (Swerve odometry + MegaTag2), used for the distance to the hub
   private final Supplier<Pose2d> m_poseSupplier;
 
-  // Smallest and largest real distance keys in ShooterConstants.rpmAngle
+  // Smallest real distance key in the shot tables (negative keys are test entries)
   private static final double MIN_TABLE_DISTANCE_M = 0.0;
-  private static final double MAX_TABLE_DISTANCE_M = 4.4;
 
   /**
    * @param poseSupplier the robot's field pose, used for the distance to the hub
@@ -203,12 +204,21 @@ public class ShooterSubsystem extends SubsystemBase {
    * @param controller The Xbox controller instance.
    */
   public void runAtTargetVelocity(double topRPM, CommandXboxController controller, double kicker) {
+    runAtTargetVelocity(topRPM, controller, kicker, getBoostMultiplier());
+  }
+
+  /**
+   * Same as {@link #runAtTargetVelocity(double, CommandXboxController, double)}, with the first-shot
+   * boost multiplier given by the caller (for example from {@link #getShot(boolean)}).
+   */
+  public void runAtTargetVelocity(
+      double topRPM, CommandXboxController controller, double kicker, double boostMultiplier) {
     // Follow a changed RPM target (HashShoot looks it up every loop, so it changes whenever the
     // pose distance crosses a 0.2 m table key) without restarting the first-shot boost. The boost
     // only restarts in resetShootingState(), which commands call once per button press.
     if (normalTargetRPM != topRPM) {
       normalTargetRPM = topRPM;
-      boostedTargetRPM = topRPM * getBoostMultiplier();
+      boostedTargetRPM = topRPM * boostMultiplier;
     }
 
     double topRPS;
@@ -515,16 +525,41 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   /**
-   * Returns the first-shot boost multiplier for the current distance, falling back to {@link
-   * ShooterConstants#FIRST_SHOT_BOOST_MULTIPLIER} when the table entry has no boost set.
+   * Returns the first-shot boost multiplier for the current distance to the hub, falling back to
+   * {@link ShooterConstants#FIRST_SHOT_BOOST_MULTIPLIER} when the table entry has no boost set.
    */
   private double getBoostMultiplier() {
-    // Interpolation (see ShooterConstants): return ShooterConstants.BOOST.get(getRawDist());
-    Double[] entry = ShooterConstants.rpmAngle.get(getDist());
-    if (entry == null || entry[2] <= 0.0) {
-      return ShooterConstants.FIRST_SHOT_BOOST_MULTIPLIER;
+    return getShot(false)[2];
+  }
+
+  /**
+   * Looks up {rpm, angle, boost} for the robot's current pose distance. Uses the hub table, or the
+   * shuttle table and shuttle target when {@code shuttle} is true. Interpolates between entries
+   * when {@link ShooterConstants#INTERPOLATION_ENABLED} is set, otherwise rounds to the nearest key.
+   */
+  public double[] getShot(boolean shuttle) {
+    Pose2d pose = m_poseSupplier.get();
+    double meters =
+        shuttle
+            ? HubTargeting.getShuttleDistanceMeters(pose)
+            : HubTargeting.getDistanceMeters(pose);
+    double rpm, angle, boost;
+    if (ShooterConstants.INTERPOLATION_ENABLED) {
+      rpm = (shuttle ? ShooterConstants.SHUTTLE_RPM : ShooterConstants.RPM).get(meters);
+      angle = (shuttle ? ShooterConstants.SHUTTLE_ANGLE : ShooterConstants.ANGLE).get(meters);
+      boost = (shuttle ? ShooterConstants.SHUTTLE_BOOST : ShooterConstants.BOOST).get(meters);
+    } else {
+      HashMap<Double, Double[]> table =
+          shuttle ? ShooterConstants.shuttleRpmAngle : ShooterConstants.rpmAngle;
+      Double[] entry = table.get(roundToTableKey(meters, table));
+      rpm = entry[0];
+      angle = entry[1];
+      boost = entry[2];
     }
-    return entry[2];
+    if (boost <= 0.0) {
+      boost = ShooterConstants.FIRST_SHOT_BOOST_MULTIPLIER;
+    }
+    return new double[] {rpm, angle, boost};
   }
 
   /**
@@ -532,21 +567,27 @@ public class ShooterSubsystem extends SubsystemBase {
    * 0.2 m keys and clamped to the table's range so {@code rpmAngle.get()} never returns null.
    */
   public double getDist() {
-    double meters = HubTargeting.getDistanceMeters(m_poseSupplier.get());
-    meters = Math.max(MIN_TABLE_DISTANCE_M, Math.min(MAX_TABLE_DISTANCE_M, meters));
+    return roundToTableKey(
+        HubTargeting.getDistanceMeters(m_poseSupplier.get()), ShooterConstants.rpmAngle);
+  }
+
+  /** Same as {@link #getDist()}, but to the shuttle target, keyed for the shuttle table. */
+  public double getShuttleDist() {
+    return roundToTableKey(
+        HubTargeting.getShuttleDistanceMeters(m_poseSupplier.get()),
+        ShooterConstants.shuttleRpmAngle);
+  }
+
+  /** Rounds meters to the nearest 0.2 m key, clamped to the table's largest key. */
+  private static double roundToTableKey(double meters, HashMap<Double, Double[]> table) {
+    double maxKey = Collections.max(table.keySet());
+    meters = Math.max(MIN_TABLE_DISTANCE_M, Math.min(maxKey, meters));
     int a = (int) (meters * 100);
     double b = (double) a;
     b = b / 20.0;
     b = Math.round(b) * 2.0;
     return b / 10.0;
   }
-
-  // For interpolation (see ShooterConstants): the unrounded, unclamped distance to the hub center.
-  // The interpolating maps blend between keys and hold their end values, so no rounding is needed.
-  //
-  // public double getRawDist() {
-  //   return HubTargeting.getDistanceMeters(m_poseSupplier.get());
-  // }
 
   @Override
   public void periodic() {
@@ -563,6 +604,7 @@ public class ShooterSubsystem extends SubsystemBase {
     // Unrounded distance and aim error, for checking the pose against tape measurements
     m_shooterTelemetry.log("Shooter/RawHubDistance", HubTargeting.getDistanceMeters(pose));
     m_shooterTelemetry.log("Shooter/HubHeadingErrorDeg", HubTargeting.getHeadingErrorDegrees(pose));
+    m_shooterTelemetry.log("Shooter/ShuttleDistance", HubTargeting.getShuttleDistanceMeters(pose));
 
     // RPM Telemetry
     m_shooterTelemetry.log("Shooter/Motor41RPM", getMotor41RPM());
