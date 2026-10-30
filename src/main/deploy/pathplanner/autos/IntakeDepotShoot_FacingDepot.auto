@@ -13,49 +13,56 @@
         {
           "type": "path",
           "data": {
-            "pathName": "midtostation"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "stationtoshoot"
+            "pathName": "StartFacingDepot"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "null"
+            "name": "armDown"
           }
         },
         {
-          "type": "wait",
+          "type": "deadline",
           "data": {
-            "waitTime": 1.0
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "lowkmid"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "IntakeDepot"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intake"
+                }
+              }
+            ]
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "null"
+            "name": "armUp"
           }
         },
         {
-          "type": "wait",
+          "type": "path",
           "data": {
-            "waitTime": 3.0
+            "pathName": "ShootFromDepot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "alignAndShoot"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "IntakeDepotShootAutos",
   "choreoAuto": false
 }

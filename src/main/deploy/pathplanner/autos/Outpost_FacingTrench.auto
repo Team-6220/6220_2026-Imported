@@ -13,7 +13,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "HossTest"
+            "pathName": "StartFacingTrench"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 5.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ShootFromOutpost"
           }
         },
         {
@@ -21,11 +33,17 @@
           "data": {
             "name": "alignAndShoot"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "seedPose"
+          }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "OutpostShootAutos",
   "choreoAuto": false
 }

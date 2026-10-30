@@ -1,0 +1,88 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "seedPose"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "LeftTrenchOut"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "armDown"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "NeutralLeftHalfSweep"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "armUp"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "ReturnAndShootFromLeftHalfSweep"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "alignAndShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "seedPose"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "NeutralZoneAutos",
+  "choreoAuto": false
+}

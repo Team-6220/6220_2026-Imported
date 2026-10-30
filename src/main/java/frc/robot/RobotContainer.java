@@ -89,9 +89,9 @@ public class RobotContainer {
   // Reverse kicker to clear jammed balls. Kicker normally feeds at ~1200 RPM (~20% of free speed),
   // so reverse harder than that to push a stuck ball back out.
   private static final double KICKER_REVERSE_PERCENT = 0.5;
-  // Arm setpoints (same values as the arm0 / arm90 button bindings below)
-  private static final double ARM_DOWN = -2;
-  private static final double ARM_UP = -29.785476684570312;
+  // Arm setpoints
+  private static final double ARM_DOWN = -29.785476684570312;
+  private static final double ARM_UP = -2;
 
   /** Resets the field heading so the robot's current front faces away from our driver station. */
   public void zeroHeading() {
@@ -115,23 +115,28 @@ public class RobotContainer {
 
     // Autos are built when auto starts (not here) so they see the current alliance
     // (e.g. BasicAuto reads Constants.isRed in its constructor).
-    autoChooser.add("Do nothing", InstantCommand::new);
+    autoChooser.add("No Auto", InstantCommand::new);
     autoChooser.addDefault(
         "basicAuto", () -> new BasicAuto(s_Swerve, m_angler, m_shooter, belt, m_driverController));
-    autoChooser.add(
-        "Red", () -> new BasicAutoRed(s_Swerve, m_angler, m_shooter, belt, m_driverController));
-    autoChooser.add(
-        "Blue", () -> new BasicAutoBlue(s_Swerve, m_angler, m_shooter, belt, m_driverController));
-    autoChooser.add("samautov1", () -> new SamAutoV1(s_Swerve));
-    autoChooser.add("samautov2", () -> new SamAutoV2(s_Swerve));
-    autoChooser.add(
-        "brightAuto",
-        () -> new BrightTryMakeAuto(s_Swerve, arm, m_driverController, m_angler, m_shooter, belt));
-    autoChooser.add("tinyPath", () -> new FollowPathAuto(s_Swerve, "tinyPath"));
+    //autoChooser.add(
+    //    "Red", () -> new BasicAutoRed(s_Swerve, m_angler, m_shooter, belt, m_driverController));
+    //autoChooser.add(
+    //    "Blue", () -> new BasicAutoBlue(s_Swerve, m_angler, m_shooter, belt, m_driverController));
+    //autoChooser.add("samautov1", () -> new SamAutoV1(s_Swerve));
+    //autoChooser.add("samautov2", () -> new SamAutoV2(s_Swerve));
+    //autoChooser.add(
+    //    "brightAuto",
+    //    () -> new BrightTryMakeAuto(s_Swerve, arm, m_driverController, m_angler, m_shooter, belt));
+    //autoChooser.add("tinyPath", () -> new FollowPathAuto(s_Swerve, "tinyPath"));
+
     // Every .auto made in PathPlanner (deploy/pathplanner/autos/) shows up as "PP: <name>"
     for (String autoName : AutoBuilder.getAllAutoNames()) {
       autoChooser.add("PP: " + autoName, () -> new PathPlannerAuto(autoName));
     }
+
+    // Paths
+    //autoChooser.add("StartNextToHub", () -> new FollowPathAuto(s_Swerve, "StartNextToHub"));
+
     // Published to NT at /Tunables/Auto Chooser (Elastic "ComboBox Chooser" widget)
     Tunables.publish("Auto Chooser", autoChooser);
 
@@ -202,9 +207,9 @@ public class RobotContainer {
 
     // armUpAndDown.whileTrue(new ArmUpAndDown(arm));
 
-    // DEBUG:
-    m_driverController.dpadUp().onTrue(new ArmToPositionCommand(arm, ARM_DOWN));
-    m_driverController.dpadDown().onTrue(new ArmToPositionCommand(arm, ARM_UP));
+    // Driver Arm Controls - Remove if confusing
+    m_driverController.dpadUp().onTrue(new ArmToPositionCommand(arm, ARM_UP));
+    m_driverController.dpadDown().onTrue(new ArmToPositionCommand(arm, ARM_DOWN));
     m_driverController.dpadRight().whileTrue(new TestRollerCommand(false));
     m_driverController.dpadLeft().onTrue(Commands.runOnce(() -> arm.resetEncoder()));
 

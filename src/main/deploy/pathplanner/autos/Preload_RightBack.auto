@@ -13,7 +13,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "newpath"
+            "pathName": "RightBack"
           }
         },
         {
@@ -21,11 +21,17 @@
           "data": {
             "name": "alignAndShoot"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "seedPose"
+          }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "ShootPreloadAutos",
   "choreoAuto": false
 }

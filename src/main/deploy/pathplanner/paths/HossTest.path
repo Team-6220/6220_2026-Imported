@@ -45,7 +45,7 @@
     "rotation": -84.92039213998542
   },
   "reversed": false,
-  "folder": null,
+  "folder": "DebugPaths",
   "idealStartingState": {
     "velocity": 0,
     "rotation": -1.7357045889283123

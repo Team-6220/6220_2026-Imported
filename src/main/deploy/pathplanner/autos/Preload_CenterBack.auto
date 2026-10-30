@@ -13,19 +13,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "getToClimber"
+            "pathName": "CenterBack"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "ACC"
+            "name": "alignAndShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "seedPose"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "ShootPreloadAutos",
   "choreoAuto": false
 }

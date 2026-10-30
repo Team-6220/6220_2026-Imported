@@ -13,13 +13,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "tinyPath"
+            "pathName": "LeftBack"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "seedPose"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": null,
+  "folder": "ShootPreloadAutos",
   "choreoAuto": false
 }
