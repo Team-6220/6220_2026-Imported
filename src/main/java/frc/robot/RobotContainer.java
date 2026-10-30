@@ -159,17 +159,18 @@ public class RobotContainer {
         "intake",
         Commands.parallel(new TestRollerCommand(true), new ArmToPositionCommand(arm, ARM_DOWN)));
     NamedCommands.registerCommand("outtake", new TestRollerCommand(false));
-    NamedCommands.registerCommand("armDown", new ArmToPositionCommand(arm, ARM_DOWN));
-    NamedCommands.registerCommand("armUp", new ArmToPositionCommand(arm, ARM_UP));
+    NamedCommands.registerCommand("armDown",
+        new ArmToPositionCommand(arm, ARM_DOWN)
+            .withTimeout(1.5));
+    NamedCommands.registerCommand(
+        "armUp", 
+        new ArmToPositionCommand(arm, ARM_UP)
+            .withTimeout(1.5));
     NamedCommands.registerCommand("shoot", new HashShootAuto(m_angler, m_shooter, belt));
     NamedCommands.registerCommand(
         "align",
         new AlignAndMove(s_Swerve, m_driverController, m_driverController.leftBumper())
             .withTimeout(2));
-    // Possible issue (unconfirmed): AlignAndMove.end() switches the Limelight back to pipeline 0,
-    // and HashShootAuto reads getDist() once in initialize() right after. If no frame from the new
-    // pipeline has arrived yet, the read may see no tag and the whole shot uses the -1 (100 RPM)
-    // table entry. Log getDist() at shoot start to check.
     NamedCommands.registerCommand(
         "alignAndShoot",
         new AlignAndMove(s_Swerve, m_driverController, m_driverController.leftBumper())

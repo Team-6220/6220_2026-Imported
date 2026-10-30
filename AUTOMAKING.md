@@ -82,11 +82,19 @@ These are registered in `RobotContainer.registerNamedCommands()`. Names are **ca
 | `seedPose` | Sets the pose from vision if 2+ tags are visible; otherwise does nothing | Yes, instantly |
 | `intake` | Runs the intake rollers inward and moves the arm down | **No** |
 | `outtake` | Runs the intake rollers outward | **No** |
-| `armDown` | Moves the arm to the down position | Yes, when the arm reaches it |
-| `armUp` | Moves the arm to the up position | Yes, when the arm reaches it |
-| `shoot` | Sets the shooter angle and RPM from the Limelight distance, and runs the belt | **No** |
-| `align` | Turns the robot to aim at the visible tag (drives the robot) | Yes, after 2 s |
+| `armDown` | Moves the arm to the down position | Yes, when the arm reaches it or after 1.5 s |
+| `armUp` | Moves the arm to the up position | Yes, when the arm reaches it or after 1.5 s |
+| `shoot` | Sets the shooter angle and RPM from the robot's distance to the hub, and runs the belt. Does **not** turn the robot | **No** |
+| `align` | Turns the robot to face the hub center, using the robot's pose (drives the robot) | Yes, after 2 s |
 | `alignAndShoot` | `align` (2 s), then `shoot` (4 s) | Yes, after about 6 s |
+
+### `armDown` and `armUp` timeout
+
+They end when the arm gets within 0.5 encoder units of the target, or after 1.5 s, whichever comes first. If the arm can't reach the target (a hard stop, or a wrong setpoint), the auto moves on after 1.5 s anyway, with the arm wherever it stopped. When the command ends, the arm stops holding its position, so it can drift until the next arm command runs.
+
+The arm isn't simulated, so in sim these always take the full 1.5 s.
+
+`intake` also moves the arm down, but it has no timeout of its own. It never ends, so it still needs a deadline or race group (see below).
 
 ### Using commands that never end
 
@@ -102,12 +110,11 @@ These are registered in `RobotContainer.registerNamedCommands()`. Names are **ca
 
 ### How `shoot` picks its distance
 
-`shoot` and `alignAndShoot` measure the Limelight distance at the instant they start, then use that RPM and angle for the whole shot. If a tag is visible at that moment, the shot works normally. But:
+`shoot` and `alignAndShoot` take the distance from the robot's **pose** (odometry corrected by vision) to the hub center. No tag has to be visible. They read it once, at the instant `shoot` starts, and use that RPM and angle for the whole shot. If the robot moves during the shot, RPM and angle don't update.
 
-- If that one frame has no tag (the robot is still settling, or the image is blurry), the whole shot uses a 100 RPM test value, even if the tag appears a moment later.
-- If the robot moves during the shot, RPM and angle don't update.
+`shoot` doesn't aim. On its own, it shoots in whatever direction the robot faces when the path ends. Use `alignAndShoot` unless the path's Goal End State rotation already points at the hub.
 
-So finish the path **stopped and facing the hub tags** before `shoot` starts. A short wait block before it helps.
+So finish the path **stopped** before `shoot` starts.
 
 ## Checklist before running a new auto
 
@@ -115,5 +122,6 @@ So finish the path **stopped and facing the hub tags** before `shoot` starts. A 
 - [ ] Reset Odometry on, `seedPose` first (`.auto` only)
 - [ ] Commands that never end are inside a deadline/race group or a marker zone
 - [ ] No `align` / `alignAndShoot` as event markers
+- [ ] Plain `shoot` only where the path already ends facing the hub 100% of the time (unlikely)
 - [ ] Robot placed at the first path's start position **and** rotation
 - [ ] Code deployed after saving in PathPlanner
