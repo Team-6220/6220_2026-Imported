@@ -73,7 +73,7 @@ public class RobotContainer {
   /* Subsystems */
   private final AdressableLEDs s_LED = new AdressableLEDs();
   private final Swerve s_Swerve = new Swerve();
-  private final ShooterSubsystem m_shooter = new ShooterSubsystem(s_Swerve::getPose);
+  private final ShooterSubsystem m_shooter = new ShooterSubsystem(s_Swerve::getPose, s_Swerve);
   private final AnglerSubsystem m_angler = new AnglerSubsystem();
   private final ArmSubsystem arm = ArmSubsystem.getInstance();
   private final BeltSubsystem belt = BeltSubsystem.getInstance();

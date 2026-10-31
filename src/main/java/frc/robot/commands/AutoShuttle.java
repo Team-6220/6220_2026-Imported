@@ -48,7 +48,7 @@ public class AutoShuttle extends Command {
     // Looked up every loop so RPM and angle follow the pose while the driver moves
     double[] shot = m_shoot.getShot(true);
     m_angler.setAngle(shot[1]);
-    m_shoot.runAtTargetVelocity(shot[0], controller, 1200, shot[2]);
+    m_shoot.runAtTargetVelocity(shot[0], controller, 1200, shot[2], true);
     m_belt.simpleDrive(-0.5);
   }
 

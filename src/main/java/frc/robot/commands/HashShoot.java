@@ -53,7 +53,7 @@ public class HashShoot extends Command {
     degrees = shot[1];
 
     m_angler.setAngle(degrees);
-    m_shoot.runAtTargetVelocity(rpm, controller, 1200, shot[2]);
+    m_shoot.runAtTargetVelocity(rpm, controller, 1200, shot[2], false);
     m_belt.simpleDrive(-0.5);
     
   }

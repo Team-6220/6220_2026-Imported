@@ -31,6 +31,7 @@ import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.telemetry.Telemetry;
 import org.wpilib.telemetry.TelemetryTable;
 import org.wpilib.tunable.TunableDouble;
+import frc.robot.subsystems.Drive.*;
 
 public class ShooterSubsystem extends SubsystemBase {
 
@@ -111,10 +112,12 @@ public class ShooterSubsystem extends SubsystemBase {
   // Smallest real distance key in the shot tables (negative keys are test entries)
   private static final double MIN_TABLE_DISTANCE_M = 0.0;
 
+  Swerve s_Swerve;
+
   /**
    * @param poseSupplier the robot's field pose, used for the distance to the hub
    */
-  public ShooterSubsystem(Supplier<Pose2d> poseSupplier) {
+  public ShooterSubsystem(Supplier<Pose2d> poseSupplier, Swerve s_Swerve) {
     m_poseSupplier = poseSupplier;
     CANPort shooterCANPort = CANPort.CAN_S1;
     CANBus shooterCANBus = new CANBus(shooterCANPort);
@@ -124,6 +127,7 @@ public class ShooterSubsystem extends SubsystemBase {
     m_motor31 = new TalonFX(MOTOR_31_ID, shooterCANBus);
     m_motor35 = new TalonFX(MOTOR_35_ID, shooterCANBus);
     m_velocityRequest = new VelocityVoltage(0).withSlot(0);
+    this.s_Swerve = s_Swerve;
 
     configureMotors();
 
@@ -204,7 +208,7 @@ public class ShooterSubsystem extends SubsystemBase {
    * @param controller The Xbox controller instance.
    */
   public void runAtTargetVelocity(double topRPM, CommandNiDsXboxController controller, double kicker) {
-    runAtTargetVelocity(topRPM, controller, kicker, getBoostMultiplier());
+    runAtTargetVelocity(topRPM, controller, kicker);
   }
 
   /**
@@ -212,7 +216,7 @@ public class ShooterSubsystem extends SubsystemBase {
    * boost multiplier given by the caller (for example from {@link #getShot(boolean)}).
    */
   public void runAtTargetVelocity(
-      double topRPM, CommandNiDsXboxController controller, double kicker, double boostMultiplier) {
+      double topRPM, CommandNiDsXboxController controller, double kicker, double boostMultiplier, boolean pass) {
     // Follow a changed RPM target (HashShoot looks it up every loop, so it changes whenever the
     // pose distance crosses a 0.2 m table key) without restarting the first-shot boost. The boost
     // only restarts in resetShootingState(), which commands call once per button press.
@@ -248,8 +252,11 @@ public class ShooterSubsystem extends SubsystemBase {
 
     // Set motor velocities
     setTopGroupVelocityRPS(topRPS);
-    if (controller.getRightTriggerAxis() > 0.5) { // isAtSpeedFly(topRPS) &&
+    if (controller.getRightTriggerAxis() > 0.5 && (HubTargeting.isAligned(s_Swerve.getPose(), 2) || pass)) { // isAtSpeedFly(topRPS) &&
       setBottomGroupVelocityRPS(bottomRPS);
+    }
+    else if (controller.getRightTriggerAxis() > 0.5 && !HubTargeting.isAligned(s_Swerve.getPose(), 2)) {
+      setBottomGroupVelocityRPS(-200);
     }
 
     if (controller.getRightTriggerAxis() < 0.5) {
