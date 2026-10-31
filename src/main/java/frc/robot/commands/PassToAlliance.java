@@ -55,7 +55,7 @@ public class PassToAlliance extends Command {
   @Override
   public void execute() {
     m_angler.setAngle(angle);
-    m_shoot.runAtTargetVelocity(rpmtop, controller, rpmbottom);
+    m_shoot.runAtTargetVelocity(rpmtop, controller, rpmbottom, 1.0, true);
     m_belt.simpleDrive(beltspeed);
   }
 

@@ -112,12 +112,11 @@ public class ShooterSubsystem extends SubsystemBase {
   // Smallest real distance key in the shot tables (negative keys are test entries)
   private static final double MIN_TABLE_DISTANCE_M = 0.0;
 
-  Swerve s_Swerve;
 
   /**
    * @param poseSupplier the robot's field pose, used for the distance to the hub
    */
-  public ShooterSubsystem(Supplier<Pose2d> poseSupplier, Swerve s_Swerve) {
+  public ShooterSubsystem(Supplier<Pose2d> poseSupplier) {
     m_poseSupplier = poseSupplier;
     CANPort shooterCANPort = CANPort.CAN_S1;
     CANBus shooterCANBus = new CANBus(shooterCANPort);
@@ -127,7 +126,6 @@ public class ShooterSubsystem extends SubsystemBase {
     m_motor31 = new TalonFX(MOTOR_31_ID, shooterCANBus);
     m_motor35 = new TalonFX(MOTOR_35_ID, shooterCANBus);
     m_velocityRequest = new VelocityVoltage(0).withSlot(0);
-    this.s_Swerve = s_Swerve;
 
     configureMotors();
 
@@ -207,9 +205,6 @@ public class ShooterSubsystem extends SubsystemBase {
    * @param topRPM Desired top-group velocity in RPM (normal, non-boosted).
    * @param controller The Xbox controller instance.
    */
-  public void runAtTargetVelocity(double topRPM, CommandNiDsXboxController controller, double kicker) {
-    runAtTargetVelocity(topRPM, controller, kicker);
-  }
 
   /**
    * Same as {@link #runAtTargetVelocity(double, CommandNiDsXboxController, double)}, with the first-shot
@@ -252,10 +247,10 @@ public class ShooterSubsystem extends SubsystemBase {
 
     // Set motor velocities
     setTopGroupVelocityRPS(topRPS);
-    if (controller.getRightTriggerAxis() > 0.5 && (HubTargeting.isAligned(s_Swerve.getPose(), 2) || pass)) { // isAtSpeedFly(topRPS) &&
+    if (controller.getRightTriggerAxis() > 0.5 && (HubTargeting.isAligned(m_poseSupplier.get(), 4) || pass)) { // isAtSpeedFly(topRPS) &&
       setBottomGroupVelocityRPS(bottomRPS);
     }
-    else if (controller.getRightTriggerAxis() > 0.5 && !HubTargeting.isAligned(s_Swerve.getPose(), 2)) {
+    else if (controller.getRightTriggerAxis() > 0.5 && !HubTargeting.isAligned(m_poseSupplier.get(), 4)) {
       setBottomGroupVelocityRPS(-200);
     }
 
