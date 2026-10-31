@@ -1,0 +1,68 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "seedPose"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "StartFacingTower"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "armDown"
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "IntakeDepot"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intake"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "armUp"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "ShootFromDepotFar"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "alignAndShoot"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "IntakeDepotShootAutos",
+  "choreoAuto": false
+}

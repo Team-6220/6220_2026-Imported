@@ -159,8 +159,8 @@ public class RobotContainer {
     NamedCommands.registerCommand("seedPose", new SeedPoseFromVision(s_Swerve));
     NamedCommands.registerCommand(
         "intake",
-        Commands.parallel(new TestRollerCommand(true), new ArmToPositionCommand(arm, ARM_DOWN)));
-    NamedCommands.registerCommand("outtake", new TestRollerCommand(false));
+        Commands.parallel(new TestRollerCommand(false), new ArmToPositionCommand(arm, ARM_DOWN)));
+    NamedCommands.registerCommand("outtake", new TestRollerCommand(true));
     NamedCommands.registerCommand("armDown",
         new ArmToPositionCommand(arm, ARM_DOWN)
             .withTimeout(1.5));

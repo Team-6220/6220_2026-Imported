@@ -17,38 +17,38 @@ public class ShooterConstants {
       new HashMap<Double, Double[]>() {
         {
           //put(-1.0, new Double[] {100.0, 0.0, 0.0}); // Testing purposes
-          put(0.0, new Double[] {1900.0, 0.0, 1.15}); // Testing purposes
-          put(0.4, new Double[] {1900.0, 0.0, 1.15});
-          put(0.6, new Double[] {1900.0, 0.0, 1.15});
-          put(0.8, new Double[] {1900.0, 0.0, 1.19});
-          put(1.0, new Double[] {2050.0, 2.6, 1.2});
-          put(1.2, new Double[] {2040.0, 5.85, 1.21});
-          put(1.4, new Double[] {2060.0, 6.00, 1.22});
-          put(1.6, new Double[] {2040.0, 8.0, 1.23});
-          put(1.8, new Double[] {2000.0, 10.0, 1.24});
-          put(2.0, new Double[] {1980.0, 12.61, 1.25});
-          put(2.2, new Double[] {2000.0, 13.4, 1.26});
-          put(2.4, new Double[] {2020.0, 14.10, 1.27});
-          put(2.6, new Double[] {2040.0, 15.43, 1.28});
-          put(2.8, new Double[] {2060.0, 16.47, 1.29});
-          put(3.0, new Double[] {2080.0, 17.37, 1.3});
-          put(3.2, new Double[] {2100.0, 18.30, 1.31});
-          put(3.4, new Double[] {2120.0, 19.4, 1.32});
-          put(3.6, new Double[] {2140.0, 20.45, 1.33});
-          put(3.8, new Double[] {2160.0, 21.49, 1.34});
-          put(4.0, new Double[] {2200.0, 22.5, 1.30});
-          put(4.2, new Double[] {2220.0, 23.5, 1.31});
-          put(4.4, new Double[] {2240.0, 24.5, 1.32});
+          put(0.4, new Double[] {1900.0, 0.0, 1.0});
+          put(0.0, new Double[] {1900.0, 0.0, 1.0}); // Testing purposes
+          put(0.6, new Double[] {1900.0, 0.0, 1.0});
+          put(0.8, new Double[] {1900.0, 0.0, 1.0});
+          put(1.0, new Double[] {2050.0, 2.6, 1.0});
+          put(1.2, new Double[] {2040.0, 5.85, 1.0});
+          put(1.4, new Double[] {2060.0, 6.00, 1.0});
+          put(1.6, new Double[] {2040.0, 8.0, 1.0});
+          put(1.8, new Double[] {2000.0, 10.0, 1.0});
+          put(2.0, new Double[] {1980.0, 12.61, 1.0});
+          put(2.2, new Double[] {2000.0, 13.4, 1.0});
+          put(2.4, new Double[] {2020.0, 14.10, 1.0});
+          put(2.6, new Double[] {2040.0, 15.43, 1.0});
+          put(2.8, new Double[] {2060.0, 16.47, 1.0});
+          put(3.0, new Double[] {2080.0, 17.37, 1.0});
+          put(3.2, new Double[] {2100.0, 18.30, 1.0});
+          put(3.4, new Double[] {2120.0, 19.4, 1.0});
+          put(3.6, new Double[] {2140.0, 20.45, 1.0});
+          put(3.8, new Double[] {2160.0, 21.49, 1.0});
+          put(4.0, new Double[] {2200.0, 22.5, 1.0});
+          put(4.2, new Double[] {2220.0, 23.5, 1.0});
+          put(4.4, new Double[] {2240.0, 24.5, 1.0});
           // Extrapolated from the 3.8-4.4 trend (+20 RPM, +1.0 deg, +0.01 boost per 0.2 m).
           // Untested guesses: tune on the field.
-          put(4.6, new Double[] {2260.0, 25.5, 1.33});
-          put(4.8, new Double[] {2280.0, 26.5, 1.34});
-          put(5.0, new Double[] {2300.0, 27.5, 1.35});
-          put(5.2, new Double[] {2320.0, 28.5, 1.36});
-          put(5.4, new Double[] {2340.0, 29.5, 1.37});
-          put(5.6, new Double[] {2360.0, 30.5, 1.38});
-          put(5.8, new Double[] {2380.0, 31.5, 1.39});
-          put(6.0, new Double[] {2500.0, 32.0, 1.40});
+          put(4.6, new Double[] {2260.0, 25.5, 1.0});
+          put(4.8, new Double[] {2280.0, 26.5, 1.0});
+          put(5.0, new Double[] {2300.0, 27.5, 1.0});
+          put(5.2, new Double[] {2320.0, 28.5, 1.0});
+          put(5.4, new Double[] {2340.0, 29.5, 1.0});
+          put(5.6, new Double[] {2360.0, 30.5, 1.0});
+          put(5.8, new Double[] {2380.0, 31.5, 1.0});
+          put(6.0, new Double[] {2500.0, 32.0, 1.0});
         }
       };
 
