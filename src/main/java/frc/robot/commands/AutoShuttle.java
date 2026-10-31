@@ -8,7 +8,7 @@ import frc.robot.subsystems.Intake.BeltSubsystem;
 import frc.robot.subsystems.Shooter.AnglerSubsystem;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import org.wpilib.command2.Command;
-import org.wpilib.command2.button.CommandXboxController;
+import org.wpilib.command2.button.CommandNiDsXboxController;
 
 /**
  * Spins up for a pass to the shuttle target (see HubTargeting.getShuttleTarget()), picking RPM and
@@ -21,13 +21,13 @@ public class AutoShuttle extends Command {
   ShooterSubsystem m_shoot;
 
   BeltSubsystem m_belt;
-  CommandXboxController controller;
+  CommandNiDsXboxController controller;
 
   public AutoShuttle(
       AnglerSubsystem m_angler,
       ShooterSubsystem m_shoot,
       BeltSubsystem m_belt,
-      CommandXboxController controller) {
+      CommandNiDsXboxController controller) {
     this.m_angler = m_angler;
     this.m_shoot = m_shoot;
     this.m_belt = m_belt;

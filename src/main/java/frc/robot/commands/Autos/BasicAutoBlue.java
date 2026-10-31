@@ -15,7 +15,7 @@ import org.wpilib.command2.InstantCommand;
 import org.wpilib.command2.PrintCommand;
 import org.wpilib.command2.RunCommand;
 import org.wpilib.command2.SequentialCommandGroup;
-import org.wpilib.command2.button.CommandXboxController;
+import org.wpilib.command2.button.CommandNiDsXboxController;
 import org.wpilib.math.geometry.Translation2d;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
@@ -27,7 +27,7 @@ public class BasicAutoBlue extends SequentialCommandGroup {
   private ShooterSubsystem m_shooter;
   private BeltSubsystem m_belt;
   private Swerve s_swerve;
-  private CommandXboxController controller;
+  private CommandNiDsXboxController controller;
 
   /** Creates a new StrightAuto. */
   public BasicAutoBlue(
@@ -35,7 +35,7 @@ public class BasicAutoBlue extends SequentialCommandGroup {
       AnglerSubsystem m_angler,
       ShooterSubsystem m_shooter,
       BeltSubsystem m_belt,
-      CommandXboxController controller) {
+      CommandNiDsXboxController controller) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     this.s_swerve = s_swerve;

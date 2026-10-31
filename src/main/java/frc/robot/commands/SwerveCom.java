@@ -5,7 +5,7 @@ import frc.robot.IOConstants;
 import frc.robot.subsystems.Drive.Swerve;
 import java.util.function.BooleanSupplier;
 import org.wpilib.command2.Command;
-import org.wpilib.command2.button.CommandXboxController;
+import org.wpilib.command2.button.CommandNiDsXboxController;
 import org.wpilib.driverstation.RobotState;
 import org.wpilib.math.geometry.Translation2d;
 
@@ -13,9 +13,9 @@ import org.wpilib.math.geometry.Translation2d;
 public class SwerveCom extends Command {
   private Swerve s_Swerve;
   private BooleanSupplier robotCentricSup;
-  private CommandXboxController driver;
+  private CommandNiDsXboxController driver;
 
-  public SwerveCom(Swerve s_Swerve, CommandXboxController driver, BooleanSupplier robotCentricSup) {
+  public SwerveCom(Swerve s_Swerve, CommandNiDsXboxController driver, BooleanSupplier robotCentricSup) {
     this.s_Swerve = s_Swerve;
     addRequirements(s_Swerve);
     this.driver = driver;
@@ -33,7 +33,7 @@ public class SwerveCom extends Command {
   public void execute() {
     if (!RobotState.isAutonomous()) {
       /* Get Values, Deadband*/
-      double[] driverInputs = IOConstants.getDriverInputs(driver.getController());
+      double[] driverInputs = IOConstants.getDriverInputs(driver.getNiDsXboxController());
       boolean robotCentric = robotCentricSup.getAsBoolean();
       // getDriverInputs flips translation on red for field-relative driving; undo that when
       // driving robot-relative so forward on the stick is always the robot's front

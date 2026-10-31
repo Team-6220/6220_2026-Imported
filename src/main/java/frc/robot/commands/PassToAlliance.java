@@ -8,7 +8,7 @@ import frc.robot.subsystems.Intake.BeltSubsystem;
 import frc.robot.subsystems.Shooter.AnglerSubsystem;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import org.wpilib.command2.Command;
-import org.wpilib.command2.button.CommandXboxController;
+import org.wpilib.command2.button.CommandNiDsXboxController;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class PassToAlliance extends Command {
@@ -19,7 +19,7 @@ public class PassToAlliance extends Command {
 
   BeltSubsystem m_belt;
 
-  CommandXboxController controller;
+  CommandNiDsXboxController controller;
 
   double rpmtop;
   double rpmbottom;
@@ -30,7 +30,7 @@ public class PassToAlliance extends Command {
       AnglerSubsystem m_angler,
       ShooterSubsystem m_shoot,
       BeltSubsystem m_belt,
-      CommandXboxController controller,
+      CommandNiDsXboxController controller,
       double rpmtop, double rpmbottom, int angle, double beltspeed) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.m_angler = m_angler;

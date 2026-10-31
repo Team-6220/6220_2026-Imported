@@ -8,7 +8,7 @@ import frc.robot.subsystems.Shooter.HubTargeting;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import org.wpilib.command2.Command;
-import org.wpilib.command2.button.CommandXboxController;
+import org.wpilib.command2.button.CommandNiDsXboxController;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Translation2d;
 
@@ -24,19 +24,19 @@ public class AlignAndMove extends Command {
 
   private Swerve s_Swerve;
   private BooleanSupplier robotCentricSup;
-  private CommandXboxController driver;
+  private CommandNiDsXboxController driver;
   private Function<Pose2d, Translation2d> targetSup;
 
   /** Aims at our hub's center. */
   public AlignAndMove(
-      Swerve s_Swerve, CommandXboxController driver, BooleanSupplier robotCentricSup) {
+      Swerve s_Swerve, CommandNiDsXboxController driver, BooleanSupplier robotCentricSup) {
     this(s_Swerve, driver, robotCentricSup, pose -> HubTargeting.getHubCenter());
   }
 
   /** Aims at the field point that {@code targetSup} returns for the robot's current pose. */
   public AlignAndMove(
       Swerve s_Swerve,
-      CommandXboxController driver,
+      CommandNiDsXboxController driver,
       BooleanSupplier robotCentricSup,
       Function<Pose2d, Translation2d> targetSup) {
     this.s_Swerve = s_Swerve;
@@ -61,7 +61,7 @@ public class AlignAndMove extends Command {
     boolean aligned = HubTargeting.isAligned(pose, targetSup.apply(pose), ALIGN_TOLERANCE_DEG);
 
     /* Get Values, Deadband*/
-    double[] driverInputs = IOConstants.getDriverInputs(driver.getController());
+    double[] driverInputs = IOConstants.getDriverInputs(driver.getNiDsXboxController());
     boolean sticksIdle =
         Math.abs(driverInputs[0]) <= STICK_IDLE_THRESHOLD
             && Math.abs(driverInputs[1]) <= STICK_IDLE_THRESHOLD;

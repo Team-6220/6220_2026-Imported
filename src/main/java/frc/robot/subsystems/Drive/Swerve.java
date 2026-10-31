@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import org.wpilib.command2.SubsystemBase;
 import org.wpilib.driverstation.Alliance;
 import org.wpilib.driverstation.MatchState;
+import org.wpilib.driverstation.NiDsXboxController;
 import org.wpilib.driverstation.XboxController;
 import org.wpilib.framework.RobotBase;
 import org.wpilib.math.controller.ProfiledPIDController;
@@ -384,7 +385,7 @@ public class Swerve extends SubsystemBase {
         new Pose2d(getPose().getTranslation(), new Rotation2d(offset)));
   }
 
-  public void zeroHeading(XboxController driverController) {
+  public void zeroHeading(NiDsXboxController driverController) {
     zeroHeading();
     RumbleManager.rumble(driverController, .2);
   }

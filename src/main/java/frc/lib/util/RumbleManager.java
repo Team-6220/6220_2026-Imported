@@ -5,12 +5,13 @@
 package frc.lib.util;
 
 import org.wpilib.driverstation.GenericHID.RumbleType;
+import org.wpilib.driverstation.NiDsXboxController;
 import org.wpilib.driverstation.XboxController;
 import org.wpilib.system.Timer;
 
 /** Add your docs here. */
 public class RumbleManager {
-  public static void rumble(XboxController driver, double delayTimeInSec) {
+  public static void rumble(NiDsXboxController driver, double delayTimeInSec) {
     driver.setRumble(RumbleType.LEFT_RUMBLE, 0.75);
     driver.setRumble(RumbleType.RIGHT_RUMBLE, 0.75);
     Timer.delay(delayTimeInSec);

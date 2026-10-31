@@ -9,7 +9,7 @@ import frc.robot.subsystems.Intake.BeltSubsystem;
 import frc.robot.subsystems.Shooter.AnglerSubsystem;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import org.wpilib.command2.ParallelCommandGroup;
-import org.wpilib.command2.button.CommandXboxController;
+import org.wpilib.command2.button.CommandNiDsXboxController;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
@@ -18,14 +18,14 @@ public class AlignAndFlywheels extends ParallelCommandGroup {
   /** Creates a new AlignAndFlywheels. */
   Swerve s_swerve;
 
-  CommandXboxController controller;
+  CommandNiDsXboxController controller;
   AnglerSubsystem m_angler;
   ShooterSubsystem m_shooter;
   BeltSubsystem m_belt;
 
   public AlignAndFlywheels(
       Swerve s_swerve,
-      CommandXboxController controller,
+      CommandNiDsXboxController controller,
       AnglerSubsystem m_angler,
       ShooterSubsystem m_shooter,
       BeltSubsystem m_belt) {

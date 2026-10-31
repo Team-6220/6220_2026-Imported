@@ -8,7 +8,7 @@ import frc.robot.subsystems.Intake.BeltSubsystem;
 import frc.robot.subsystems.Shooter.AnglerSubsystem;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import org.wpilib.command2.Command;
-import org.wpilib.command2.button.CommandXboxController;
+import org.wpilib.command2.button.CommandNiDsXboxController;
 import org.wpilib.telemetry.Telemetry;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
@@ -19,7 +19,7 @@ public class HashShoot extends Command {
   ShooterSubsystem m_shoot;
 
   BeltSubsystem m_belt;
-  CommandXboxController controller;
+  CommandNiDsXboxController controller;
   double degrees;
   double rpm;
 
@@ -27,7 +27,7 @@ public class HashShoot extends Command {
       AnglerSubsystem m_angler,
       ShooterSubsystem m_shoot,
       BeltSubsystem m_belt,
-      CommandXboxController controller) {
+      CommandNiDsXboxController controller) {
     this.m_angler = m_angler;
     this.m_shoot = m_shoot;
     this.m_belt = m_belt;

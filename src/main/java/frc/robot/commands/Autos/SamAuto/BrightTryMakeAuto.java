@@ -21,7 +21,7 @@ import org.json.simple.parser.ParseException;
 import org.wpilib.command2.InstantCommand;
 import org.wpilib.command2.SequentialCommandGroup;
 import org.wpilib.command2.WaitCommand;
-import org.wpilib.command2.button.CommandXboxController;
+import org.wpilib.command2.button.CommandNiDsXboxController;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
 import static org.wpilib.units.Units.MetersPerSecond;
@@ -30,7 +30,7 @@ public class BrightTryMakeAuto extends SequentialCommandGroup{
       /** Starting pose (toptostation.path first anchor, idealStartingState rotation). */
   private static final Pose2d START_POSE = new Pose2d(3.43, 4.05, Rotation2d.fromDegrees(0));
   private final ArmSubsystem arm;
-  private final CommandXboxController controller;
+  private final CommandNiDsXboxController controller;
   /** Poses to drive to, in order (last one = toptostation.path end anchor + goalEndState). */
   private static final Pose2d[] ALIGNTOOUTPOST = {
         new Pose2d(1.7395, 5.946, Rotation2d.fromDegrees(180)),
@@ -52,7 +52,7 @@ public class BrightTryMakeAuto extends SequentialCommandGroup{
   private static final double WAYPOINT_TIMEOUT_SECONDS = 4.0;
 
   /** Creates a new SamAutoV2. */
-  public BrightTryMakeAuto(Swerve swerve, ArmSubsystem arm,CommandXboxController controller, AnglerSubsystem angler, ShooterSubsystem shooter, BeltSubsystem belt) {
+  public BrightTryMakeAuto(Swerve swerve, ArmSubsystem arm,CommandNiDsXboxController controller, AnglerSubsystem angler, ShooterSubsystem shooter, BeltSubsystem belt) {
     this.arm = arm;
     this.controller = controller;
     addRequirements(swerve);

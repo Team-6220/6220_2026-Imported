@@ -10,6 +10,7 @@ import org.wpilib.driverstation.MatchState;
 import org.wpilib.driverstation.RobotState;
 import org.wpilib.driverstation.Alliance;
 import org.wpilib.driverstation.MatchType;
+import org.wpilib.driverstation.NiDsXboxController;
 import org.wpilib.driverstation.DriverStationErrors;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -26,7 +27,8 @@ import org.wpilib.tunable.Tunables;
 import org.wpilib.command2.Command;
 import org.wpilib.command2.Commands;
 import org.wpilib.command2.InstantCommand;
-import org.wpilib.command2.button.CommandXboxController;
+import org.wpilib.command2.button.CommandNiDsXboxController;
+import org.wpilib.command2.button.CommandNiDsXboxController;
 import org.wpilib.command2.button.Trigger;
 import frc.robot.commands.AlignAndFlywheels;
 import frc.robot.commands.AlignAndMove;
@@ -76,7 +78,7 @@ public class RobotContainer {
   private final ArmSubsystem arm = ArmSubsystem.getInstance();
   private final BeltSubsystem belt = BeltSubsystem.getInstance();
   private final RollerSubsystem roller = RollerSubsystem.getInstance();
-  private final CommandXboxController m_driverController = new CommandXboxController(0);
+  private final CommandNiDsXboxController m_driverController = new CommandNiDsXboxController(0);
 
   private final Joystick m_joystick = new Joystick(1);
 
@@ -103,7 +105,7 @@ public class RobotContainer {
 
     // Configure the trigger bindings
     s_Swerve.configureAutoBuilder();
-    s_Swerve.zeroHeading(m_driverController.getController());
+    s_Swerve.zeroHeading(m_driverController.getNiDsXboxController());
 
     s_Swerve.setDefaultCommand(
         new SwerveCom(s_Swerve, m_driverController, m_driverController.leftBumper()));
@@ -183,7 +185,7 @@ public class RobotContainer {
    * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
    * predicate, or via the named factories in {@link
    * org.wpilib.command2.button.CommandGenericHID}'s subclasses for {@link
-   * CommandXboxController Xbox}/{@link org.wpilib.command2.button.CommandPS4Controller
+   * CommandNiDsXboxController Xbox}/{@link org.wpilib.command2.button.CommandPS4Controller
    * PS4} controllers or {@link org.wpilib.command2.button.CommandJoystick Flight
    * joysticks}.
    */
@@ -209,14 +211,14 @@ public class RobotContainer {
     // armUpAndDown.whileTrue(new ArmUpAndDown(arm));
 
     // Driver Arm Controls - Remove if confusing
-    m_driverController.dpadUp().onTrue(new ArmToPositionCommand(arm, ARM_UP));
-    m_driverController.dpadDown().onTrue(new ArmToPositionCommand(arm, ARM_DOWN));
-    m_driverController.dpadRight().whileTrue(new TestRollerCommand(false));
-    m_driverController.dpadLeft().onTrue(Commands.runOnce(() -> arm.resetEncoder()));
+    //m_driverController.dpadUp().onTrue(new ArmToPositionCommand(arm, ARM_UP));
+    //m_driverController.dpadDown().onTrue(new ArmToPositionCommand(arm, ARM_DOWN));
+    //m_driverController.dpadRight().whileTrue(new TestRollerCommand(false));
+    //m_driverController.dpadLeft().onTrue(Commands.runOnce(() -> arm.resetEncoder()));
 
     m_driverController
         .y()
-        .onTrue(new InstantCommand(() -> s_Swerve.zeroHeading(m_driverController.getController())));
+        .onTrue(new InstantCommand(() -> s_Swerve.zeroHeading(m_driverController.getNiDsXboxController())));
 
     angleDown.whileTrue(
         Commands.runEnd(() -> m_angler.setSpeed(-0.15), () -> m_angler.stop(), m_angler));
@@ -243,7 +245,7 @@ public class RobotContainer {
     //  passFar.whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, 3100, 1200, 32, -0.5));
     //}
 
-    m_driverController.x().whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, -2000, -2400, 0, 0.5));
+    //m_driverController.x().whileTrue(new PassToAlliance(m_angler, m_shooter, belt, m_driverController, -2000, -2400, 0, 0.5));
 
     joystickIntake.whileTrue(new TestRollerCommand(true));
 

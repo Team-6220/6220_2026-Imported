@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.function.Supplier;
 import org.wpilib.command2.Command;
 import org.wpilib.command2.SubsystemBase;
-import org.wpilib.command2.button.CommandXboxController;
+import org.wpilib.command2.button.CommandNiDsXboxController;
 import org.wpilib.command2.sysid.SysIdRoutine;
 import org.wpilib.hardware.bus.CANPort;
 import org.wpilib.math.geometry.Pose2d;
@@ -203,16 +203,16 @@ public class ShooterSubsystem extends SubsystemBase {
    * @param topRPM Desired top-group velocity in RPM (normal, non-boosted).
    * @param controller The Xbox controller instance.
    */
-  public void runAtTargetVelocity(double topRPM, CommandXboxController controller, double kicker) {
+  public void runAtTargetVelocity(double topRPM, CommandNiDsXboxController controller, double kicker) {
     runAtTargetVelocity(topRPM, controller, kicker, getBoostMultiplier());
   }
 
   /**
-   * Same as {@link #runAtTargetVelocity(double, CommandXboxController, double)}, with the first-shot
+   * Same as {@link #runAtTargetVelocity(double, CommandNiDsXboxController, double)}, with the first-shot
    * boost multiplier given by the caller (for example from {@link #getShot(boolean)}).
    */
   public void runAtTargetVelocity(
-      double topRPM, CommandXboxController controller, double kicker, double boostMultiplier) {
+      double topRPM, CommandNiDsXboxController controller, double kicker, double boostMultiplier) {
     // Follow a changed RPM target (HashShoot looks it up every loop, so it changes whenever the
     // pose distance crosses a 0.2 m table key) without restarting the first-shot boost. The boost
     // only restarts in resetShootingState(), which commands call once per button press.
@@ -248,11 +248,11 @@ public class ShooterSubsystem extends SubsystemBase {
 
     // Set motor velocities
     setTopGroupVelocityRPS(topRPS);
-    if (controller.getRightTrigger() > 0.5) { // isAtSpeedFly(topRPS) &&
+    if (controller.getRightTriggerAxis() > 0.5) { // isAtSpeedFly(topRPS) &&
       setBottomGroupVelocityRPS(bottomRPS);
     }
 
-    if (controller.getRightTrigger() < 0.5) {
+    if (controller.getRightTriggerAxis() < 0.5) {
       m_motor41.stopMotor();
       m_motor34.stopMotor();
     }
