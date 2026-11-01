@@ -286,11 +286,13 @@ public class ShooterSubsystem extends SubsystemBase {
       if (isFirstShot) {
         // Still in boost phase
         topRPS = boostedTargetRPM / 60.0;
-      } else {
+      } 
+      else {
         // Transitioned to normal phase
         topRPS = normalTargetRPM / 60.0;
       }
-    } else {
+    } 
+    else {
       // Phase 3: Normal operation
       topRPS = normalTargetRPM / 60.0;
     }
