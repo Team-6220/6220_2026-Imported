@@ -17,8 +17,8 @@ public class ShooterConstants {
       new HashMap<Double, Double[]>() {
         {
           //put(-1.0, new Double[] {100.0, 0.0, 0.0}); // Testing purposes
-          put(0.4, new Double[] {1900.0, 0.0, 1.0});
           put(0.0, new Double[] {1900.0, 0.0, 1.0}); // Testing purposes
+          put(0.4, new Double[] {1900.0, 0.0, 1.0});
           put(0.6, new Double[] {1900.0, 0.0, 1.0});
           put(0.8, new Double[] {1900.0, 0.0, 1.0});
           put(1.0, new Double[] {2050.0, 2.6, 1.0});
@@ -105,7 +105,7 @@ public class ShooterConstants {
    * When true, shots blend between the two nearest table entries instead of rounding the distance
    * to the nearest 0.2 m key. Past either end of a table, the end value is held.
    */
-  public static final boolean INTERPOLATION_ENABLED = true;
+  public static final boolean INTERPOLATION_ENABLED = false;
 
   // ========== Shuttle target ==========
   // The shuttle target sits on our side of the field (the half the robot is on, by y), on the line
