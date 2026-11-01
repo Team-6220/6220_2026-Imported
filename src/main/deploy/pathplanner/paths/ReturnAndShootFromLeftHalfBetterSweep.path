@@ -12,7 +12,7 @@
         "y": 5.654579996267362
       },
       "isLocked": false,
-      "linkedName": "bettersweep1returnpoint"
+      "linkedName": null
     },
     {
       "anchor": {
@@ -32,16 +32,16 @@
     },
     {
       "anchor": {
-        "x": 2.2632143972228227,
-        "y": 5.063402502848167
+        "x": 3.223877824029015,
+        "y": 5.485672141004734
       },
       "prevControl": {
-        "x": 2.2437255083339345,
-        "y": 5.316758058403722
+        "x": 3.204388935140127,
+        "y": 5.7390276965602895
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "bettersweep2startpoint"
+      "linkedName": "left2sweepstartsweep2"
     }
   ],
   "rotationTargets": [
@@ -63,13 +63,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -16.990823291986167
+    "rotation": -45.9166542563853
   },
   "reversed": false,
   "folder": "NeutralZonePaths",
   "idealStartingState": {
     "velocity": 3.0,
-    "rotation": 136.81830296445185
+    "rotation": -45.9166542563853
   },
   "useDefaultConstraints": true
 }

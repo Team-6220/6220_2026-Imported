@@ -70,6 +70,12 @@
         {
           "type": "named",
           "data": {
+            "name": "seedPose"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "alignAndShoot"
           }
         },

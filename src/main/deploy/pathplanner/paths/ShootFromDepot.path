@@ -8,11 +8,11 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.4555417715883447,
+        "x": 1.455541771588345,
         "y": 5.6769388888888885
       },
       "isLocked": false,
-      "linkedName": "depotend"
+      "linkedName": null
     },
     {
       "anchor": {
