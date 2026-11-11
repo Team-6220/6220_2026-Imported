@@ -29,6 +29,7 @@ import frc.robot.commands.ArmUpAndDown;
 import frc.robot.commands.Autos.BasicAutoBlue;
 import frc.robot.commands.Autos.BasicAutoRed;
 import frc.robot.commands.Autos.BasicAuto;
+import frc.robot.commands.Autos.TrenchPreloadAuto;
 import frc.robot.commands.ManualArm;
 import frc.robot.commands.PassToAlliance;
 import frc.robot.commands.SwerveCom;
@@ -103,6 +104,9 @@ public class RobotContainer {
         "Red", new BasicAutoRed(s_Swerve, m_angler, m_shooter, belt, m_driverController));
     autoChooser.add(
         "Blue", new BasicAutoBlue(s_Swerve, m_angler, m_shooter, belt, m_driverController));
+    autoChooser.add(
+        "TrenchPreload",
+        new TrenchPreloadAuto(s_Swerve, m_angler, m_shooter, belt, m_driverController));
     autoChooser.add("samautov1", new SamAutoV1(s_Swerve));
     autoChooser.add("samautov2", new SamAutoV2(s_Swerve));
     autoChooser.onChange(command -> System.out.println("Auto selected: " + command.getName()));
