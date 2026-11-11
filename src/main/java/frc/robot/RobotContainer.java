@@ -10,8 +10,9 @@ import org.wpilib.driverstation.Alliance;
 import org.wpilib.driverstation.MatchType;
 import org.wpilib.driverstation.DriverStationErrors;
 
-// TODO: AUTO - PathPlanner doesn't support WPILib 2027 alpha 7 yet.
-// import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import org.wpilib.driverstation.GenericHID;
 import org.wpilib.driverstation.Joystick;
@@ -25,11 +26,12 @@ import org.wpilib.command2.button.CommandXboxController;
 import org.wpilib.command2.button.Trigger;
 import frc.robot.commands.AlignAndFlywheels;
 import frc.robot.commands.ArmToPositionCommand;
+import frc.robot.commands.AlignAndMove;
 import frc.robot.commands.ArmUpAndDown;
+import frc.robot.commands.HashShootAuto;
 import frc.robot.commands.Autos.BasicAutoBlue;
 import frc.robot.commands.Autos.BasicAutoRed;
 import frc.robot.commands.Autos.BasicAuto;
-import frc.robot.commands.Autos.TrenchPreloadAuto;
 import frc.robot.commands.ManualArm;
 import frc.robot.commands.PassToAlliance;
 import frc.robot.commands.SwerveCom;
@@ -84,8 +86,7 @@ public class RobotContainer {
     // Initialize climber subsystem based on robot mode
 
     // Configure the trigger bindings
-    // TODO: AUTO - re-enable once PathPlanner supports WPILib 2027 alpha 7.
-    // s_Swerve.configureAutoBuilder();
+    s_Swerve.configureAutoBuilder();
     s_Swerve.zeroHeading(m_driverController.getController());
 
     s_Swerve.setDefaultCommand(
@@ -95,8 +96,12 @@ public class RobotContainer {
 
     autoChooser = new DashboardChooser<>("/Dashboard/Auto Chooser");
 
-    // TODO: Register named commands as needed for auto
-    // NamedCommands.registerCommand("AutoClimber", new AutoClimberCommand(climberSubsystem));
+    // Must be registered before any PathPlanner path or auto is loaded
+    NamedCommands.registerCommand(
+        "alignAndShoot",
+        new AlignAndMove(s_Swerve, m_driverController, m_driverController.leftBumper())
+            .withTimeout(2)
+            .andThen(new HashShootAuto(m_angler, m_shooter, belt).withTimeout(4)));
 
     autoChooser.add("Do nothing", new InstantCommand());
     // NamedCommands.registerCommand(null, null);
@@ -104,9 +109,10 @@ public class RobotContainer {
         "Red", new BasicAutoRed(s_Swerve, m_angler, m_shooter, belt, m_driverController));
     autoChooser.add(
         "Blue", new BasicAutoBlue(s_Swerve, m_angler, m_shooter, belt, m_driverController));
-    autoChooser.add(
-        "TrenchPreload",
-        new TrenchPreloadAuto(s_Swerve, m_angler, m_shooter, belt, m_driverController));
+    // Every .auto made in PathPlanner (deploy/pathplanner/autos/) shows up as "PP: <name>"
+    for (String autoName : AutoBuilder.getAllAutoNames()) {
+      autoChooser.add("PP: " + autoName, new PathPlannerAuto(autoName));
+    }
     autoChooser.add("samautov1", new SamAutoV1(s_Swerve));
     autoChooser.add("samautov2", new SamAutoV2(s_Swerve));
     autoChooser.onChange(command -> System.out.println("Auto selected: " + command.getName()));
